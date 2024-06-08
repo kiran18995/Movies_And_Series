@@ -23,7 +23,7 @@ class TvShowsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val tvShowsViewModel =
-            ViewModelProvider(this).get(TvShowsViewModel::class.java)
+            ViewModelProvider(this)[TvShowsViewModel::class.java]
 
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root

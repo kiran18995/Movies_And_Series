@@ -23,7 +23,7 @@ class MoviesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val moviesViewModel =
-            ViewModelProvider(this).get(MoviesViewModel::class.java)
+            ViewModelProvider(this)[MoviesViewModel::class.java]
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
