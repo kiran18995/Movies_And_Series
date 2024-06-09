@@ -2,6 +2,7 @@
 agp = "8.4.1"
 coil = "2.6.0"
 hiltAndroid = "2.49"
+hiltAndroidGradlePlugin = "2.48"
 hiltCompiler = "2.48"
 kotlin = "2.0.0"
 coreKtx = "1.13.1"
@@ -26,6 +27,7 @@ swiperefreshlayout = "1.1.0"
 toasty = "1.5.2"
 kotlinCompose = "2.0.0"
 activity = "1.9.0"
+daggerHilt = "2.48"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +39,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+dagger-hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hiltAndroidGradlePlugin" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltCompiler" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -60,4 +63,5 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinCompose"}
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt"}
 
