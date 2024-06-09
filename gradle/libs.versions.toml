@@ -14,6 +14,7 @@ material = "1.12.0"
 constraintlayout = "2.1.4"
 lifecycleLivedataKtx = "2.8.1"
 lifecycleViewmodelKtx = "2.8.1"
+material3 = "1.2.1"
 navigationFragmentKtx = "2.7.7"
 navigationUiKtx = "2.7.7"
 ksp = "2.0.0-1.0.22"
@@ -23,9 +24,11 @@ roomRuntime = "2.6.1"
 shimmer = "0.5.0"
 swiperefreshlayout = "1.1.0"
 toasty = "1.5.2"
+kotlinCompose = "2.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 androidx-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "pagingRuntimeKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
@@ -54,4 +57,5 @@ toasty = { module = "com.github.GrenderG:Toasty", version.ref = "toasty" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinCompose"}
 
