@@ -19,17 +19,24 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val baseUrl = extra.properties["BASE_URL"] as String? ?: "https://api.themoviedb.org/3/"
-        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")    }
+        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
+    }
 
     buildTypes {
         getByName("debug") {
             isDebuggable = true
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
         getByName("release") {
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 

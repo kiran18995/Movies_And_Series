@@ -18,12 +18,9 @@ class MoviesFragment : Fragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        val moviesViewModel =
-            ViewModelProvider(this)[MoviesViewModel::class.java]
+        val moviesViewModel = ViewModelProvider(this)[MoviesViewModel::class.java]
 
         _binding = FragmentMoviesBinding.inflate(inflater, container, false)
         val root: View = binding.root
