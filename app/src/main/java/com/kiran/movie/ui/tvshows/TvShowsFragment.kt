@@ -12,9 +12,6 @@ import com.kiran.movie.databinding.FragmentTvShowsBinding
 class TvShowsFragment : Fragment() {
 
     private var _binding: FragmentTvShowsBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(
