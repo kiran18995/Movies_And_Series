@@ -4,4 +4,6 @@
     <string name="title_tv_shows">TV Shows</string>">
     <string name="title_saved">Saved</string>
     <string name="app_logo_for_splash_screen">App logo for splash screen</string>
+    <string name="profile_icon_desc">Profile icon</string>
+    <string name="search_icon_desc">Search Icon</string>
 </resources>
