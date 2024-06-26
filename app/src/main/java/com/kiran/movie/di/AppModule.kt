@@ -1,10 +1,12 @@
 package com.kiran.movie.di
 
+import com.kiran.movie.BuildConfig
 import com.kiran.movie.api.MoviesApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -15,6 +17,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    private const val AUTHORIZATION_TOKEN = BuildConfig.API_READ_ACCESS_TOKEN
 
     @Provides
     @Singleton
@@ -22,8 +25,15 @@ object AppModule {
         val logging = HttpLoggingInterceptor()
         logging.level = HttpLoggingInterceptor.Level.BODY
 
+        val authInterceptor = Interceptor { chain ->
+            val request = chain.request().newBuilder()
+                .addHeader("Authorization", "Bearer $AUTHORIZATION_TOKEN").build()
+            chain.proceed(request)
+        }
+
         val client = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS)
-            .connectTimeout(120, TimeUnit.SECONDS).addInterceptor(logging).build()
+            .connectTimeout(120, TimeUnit.SECONDS).addInterceptor(logging)
+            .addInterceptor(authInterceptor).build()
 
         return Retrofit.Builder().baseUrl(MoviesApi.BASE_URL).client(client)
             .addConverterFactory(GsonConverterFactory.create()).build()

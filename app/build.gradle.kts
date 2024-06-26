@@ -20,6 +20,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val baseUrl = extra.properties["BASE_URL"] as String? ?: "https://api.themoviedb.org/3/"
         buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
+        val accessToken = extra.properties["API_READ_ACCESS_TOKEN"] as String? ?: "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZTZlYjBkNTE3OWY3MDMxYWNmMzE0ZGI4ZTQxMTJhOSIsIm5iZiI6MTcxOTI1ODUwMi42NTkxMzIsInN1YiI6IjVjYTFiMmNkOTI1MTQxMWExODA4ZDEyZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xjTYKsio_c1M2zxwtfdpOgSyGthyjnsvzRh3ifbBFYg"
+        buildConfigField("String", "API_READ_ACCESS_TOKEN", "\"$accessToken\"")
     }
 
     buildTypes {
@@ -98,5 +100,8 @@ dependencies {
 
     // Coil
     implementation(libs.coil)
+
+
+    implementation(libs.motiontoast)
 
 }
