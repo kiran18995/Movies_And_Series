@@ -12,6 +12,7 @@ interface MoviesApi {
 
     @GET("movie/popular?language=en-US")
     suspend fun getMovies(
+
         @Query("page") page:Int
     ) : MovieResponse
 }

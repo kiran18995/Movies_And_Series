@@ -1,10 +1,12 @@
 package com.kiran.movie.di
 
+import android.content.Context
 import com.kiran.movie.BuildConfig
 import com.kiran.movie.api.MoviesApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient

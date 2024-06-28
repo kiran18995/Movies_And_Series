@@ -2,11 +2,15 @@ package com.kiran.movie.ui.movies
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.filter
 import com.kiran.movie.data.models.Movie
 import com.kiran.movie.data.repository.MoviesRepository
 import com.kiran.movie.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,22 +19,22 @@ class MoviesViewModel @Inject constructor(
     private val repository: MoviesRepository
 ) : ViewModel() {
 
-    private val _moviesList = MutableStateFlow<Resource<List<Movie>>>(Resource.Loading())
-    val moviesList get() = _moviesList
+    private val _moviesList = MutableStateFlow<Resource<PagingData<Movie>>>(Resource.Loading())
+    val moviesList: MutableStateFlow<Resource<PagingData<Movie>>> = _moviesList
 
-    private var movieList: List<Movie> = emptyList()
 
     init {
-        viewModelScope.launch {
-            _moviesList.emit(Resource.Loading())
-        }
+        fetchMovies()
     }
 
-    fun getMoviesList() = viewModelScope.launch {
-        repository.getQuotesGenres().collect{
-            _moviesList.emit(it)
-            if (it is Resource.Success) {
-                movieList = it.dataFetched
+    private fun fetchMovies() {
+        viewModelScope.launch {
+            try {
+                repository.getMovies().cachedIn(viewModelScope).collectLatest { pagingData ->
+                    _moviesList.value = Resource.Success(pagingData.filter { true })
+                }
+            } catch (e: Exception) {
+                _moviesList.value = Resource.Error(e)
             }
         }
     }

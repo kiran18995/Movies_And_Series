@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import com.kiran.movie.data.models.Movie
 import com.kiran.movie.databinding.FragmentMoviesBinding
 import com.kiran.movie.utils.GridSpacingItemDecoration
 import com.kiran.movie.utils.Resource
@@ -20,18 +19,22 @@ import www.sanju.motiontoast.MotionToastStyle
 
 @AndroidEntryPoint
 class MoviesFragment : Fragment() {
-
     private var _binding: FragmentMoviesBinding? = null
     private val binding get() = _binding!!
     private val viewModel by viewModels<MoviesViewModel>()
+    private var adapter: MoviesAdapter = MoviesAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMoviesBinding.inflate(inflater, container, false)
-        viewModel.getMoviesList()
-        setupObserver()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupViews()
+        setupObserver()
     }
 
     private fun setupObserver() {
@@ -48,6 +51,7 @@ class MoviesFragment : Fragment() {
                             MotionToast.LONG_DURATION,
                             null
                         )
+                        binding.progressBar.isVisible = false
                     }
 
                     is Resource.Loading -> {
@@ -56,26 +60,26 @@ class MoviesFragment : Fragment() {
 
                     is Resource.Success -> {
                         binding.progressBar.isVisible = false
-                        setupViews(it.dataFetched)
+                        adapter.submitData(it.dataFetched)
                     }
                 }
             }
         }
     }
 
-    private fun setupViews(dataFetched: List<Movie>) {
+    private fun setupViews() {
         val spanCount = 2 // 2 columns
         val spacing = 15 // 15px
         val includeEdge = false
-        binding.recyclerView.layoutManager = GridLayoutManager(context, spanCount)
-        binding.recyclerView.addItemDecoration(
-            GridSpacingItemDecoration(
-                spanCount,
-                spacing,
-                includeEdge
+        binding.apply {
+            recyclerView.layoutManager = GridLayoutManager(context, spanCount)
+            recyclerView.addItemDecoration(
+                GridSpacingItemDecoration(
+                    spanCount, spacing, includeEdge
+                )
             )
-        )
-        binding.recyclerView.adapter = MoviesAdapter(dataFetched)
+            recyclerView.adapter = adapter
+        }
     }
 
     override fun onDestroyView() {
