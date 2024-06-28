@@ -30,7 +30,6 @@ class MoviesAdapter : PagingDataAdapter<Movie, MoviesAdapter.MovieViewHolder>(Di
         RecyclerView.ViewHolder(binding.root) {
         fun bind(movie: Movie) {
             binding.itemImage.load("https://image.tmdb.org/t/p/w500${movie.posterPath}") {
-                crossfade(true)
                 transformations(RoundedCornersTransformation(25f))
                 placeholder(R.drawable.image_placeholder)
             }
