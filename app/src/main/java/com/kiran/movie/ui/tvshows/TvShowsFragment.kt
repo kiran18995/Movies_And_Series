@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -23,12 +22,13 @@ class TvShowsFragment : Fragment() {
     private var _binding: FragmentTvShowsBinding? = null
     private val binding get() = _binding!!
     private val viewModel by viewModels<TvShowsViewModel>()
-    private var adapter: SeriesAdapter = SeriesAdapter()
+    private lateinit var adapter: SeriesAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentTvShowsBinding.inflate(inflater, container, false)
+        adapter = SeriesAdapter(binding.shimmerLayoutItems)
         return binding.root
     }
 
@@ -52,15 +52,14 @@ class TvShowsFragment : Fragment() {
                             MotionToast.LONG_DURATION,
                             null
                         )
-                        binding.progressBar.isVisible = false
+                        binding.shimmerLayoutItems.stopShimmer()
                     }
 
                     is Resource.Loading -> {
-                        binding.progressBar.isVisible = true
+                        binding.shimmerLayoutItems.startShimmer()
                     }
 
                     is Resource.Success -> {
-                        binding.progressBar.isVisible = false
                         adapter.submitData(it.dataFetched)
                     }
                 }

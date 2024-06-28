@@ -4,13 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.filter
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.data.repository.MoviesAndSeriesRepository
 import com.kiran.movie.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,8 +28,8 @@ class TvShowsViewModel @Inject constructor(
     private fun fetchSeries() {
         viewModelScope.launch {
             try {
-                repository.getTvShows(false).cachedIn(viewModelScope).collectLatest { pagingData ->
-                    _seriesList.value = Resource.Success(pagingData.filter { true })
+                repository.getTvShows(false).cachedIn(viewModelScope).collect { pagingData ->
+                    _seriesList.value = Resource.Success(pagingData)
                 }
             } catch (e: Exception) {
                 _seriesList.value = Resource.Error(e)

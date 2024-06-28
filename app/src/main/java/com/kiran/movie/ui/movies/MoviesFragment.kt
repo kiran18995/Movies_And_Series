@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -22,12 +21,13 @@ class MoviesFragment : Fragment() {
     private var _binding: FragmentMoviesBinding? = null
     private val binding get() = _binding!!
     private val viewModel by viewModels<MoviesViewModel>()
-    private var adapter: MoviesAdapter = MoviesAdapter()
+    private lateinit var adapter: MoviesAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMoviesBinding.inflate(inflater, container, false)
+        adapter = MoviesAdapter(binding.shimmerLayoutItems)
         return binding.root
     }
 
@@ -51,15 +51,14 @@ class MoviesFragment : Fragment() {
                             MotionToast.LONG_DURATION,
                             null
                         )
-                        binding.progressBar.isVisible = false
+                        binding.shimmerLayoutItems.stopShimmer()
                     }
 
                     is Resource.Loading -> {
-                        binding.progressBar.isVisible = true
+                        binding.shimmerLayoutItems.startShimmer()
                     }
 
                     is Resource.Success -> {
-                        binding.progressBar.isVisible = false
                         adapter.submitData(it.dataFetched)
                     }
                 }

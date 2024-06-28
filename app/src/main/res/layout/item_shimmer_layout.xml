@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:baselineAligned="false"
+    android:layout_marginStart="@dimen/dimen_16"
+    android:layout_marginEnd="@dimen/dimen_16"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/shimmerCard"
+        android:layout_width="0dp"
+        android:layout_height="280dp"
+        android:layout_margin="@dimen/dimen_4"
+        android:layout_weight="1"
+        android:background="@drawable/shimmer_card"
+        android:contentDescription="@string/movie_thumbnails_desc"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="280dp"
+        android:layout_margin="@dimen/dimen_4"
+        android:layout_weight="1"
+        android:background="@drawable/shimmer_card"
+        android:contentDescription="@string/movie_thumbnails_desc"
+        android:orientation="horizontal" />
+</LinearLayout>
