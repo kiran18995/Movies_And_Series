@@ -1,4 +1,4 @@
-package com.kiran.movie.ui.movies
+package com.kiran.movie.ui.tvshows
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -11,22 +11,9 @@ import com.kiran.movie.R
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.databinding.ItemCardThumbnailBinding
 
-class MoviesAdapter : PagingDataAdapter<Item, MoviesAdapter.MovieViewHolder>(DiffCallback()) {
+class SeriesAdapter : PagingDataAdapter<Item, SeriesAdapter.SeriesViewHolder>(DiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieViewHolder {
-        val binding =
-            ItemCardThumbnailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MovieViewHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
-        val movie = getItem(position)
-        if (movie != null) {
-            holder.bind(movie)
-        }
-    }
-
-    class MovieViewHolder(private val binding: ItemCardThumbnailBinding) :
+    class SeriesViewHolder(private val binding: ItemCardThumbnailBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Item) {
             binding.itemImage.load("https://image.tmdb.org/t/p/w500${item.posterPath}") {
@@ -44,5 +31,18 @@ class MoviesAdapter : PagingDataAdapter<Item, MoviesAdapter.MovieViewHolder>(Dif
         override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
             return oldItem == newItem
         }
+    }
+
+    override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
+        val series = getItem(position)
+        if (series != null) {
+            holder.bind(series)
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SeriesViewHolder {
+        val binding =
+            ItemCardThumbnailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return SeriesViewHolder(binding)
     }
 }
