@@ -4,29 +4,83 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import com.kiran.movie.databinding.FragmentTvShowsBinding
+import com.kiran.movie.utils.GridSpacingItemDecoration
+import com.kiran.movie.utils.Resource
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import www.sanju.motiontoast.MotionToast
+import www.sanju.motiontoast.MotionToastStyle
 
+@AndroidEntryPoint
 class TvShowsFragment : Fragment() {
 
     private var _binding: FragmentTvShowsBinding? = null
     private val binding get() = _binding!!
+    private val viewModel by viewModels<TvShowsViewModel>()
+    private var adapter: SeriesAdapter = SeriesAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        val tvShowsViewModel = ViewModelProvider(this)[TvShowsViewModel::class.java]
-
         _binding = FragmentTvShowsBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        return binding.root
+    }
 
-        val textView: TextView = binding.textDashboard
-        tvShowsViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupViews()
+        setupObserver()
+    }
+
+    private fun setupObserver() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.seriesList.collect {
+                when (it) {
+                    is Resource.Error -> {
+                        MotionToast.darkToast(
+                            requireActivity(),
+                            "ERROR",
+                            it.toString(),
+                            MotionToastStyle.ERROR,
+                            MotionToast.GRAVITY_BOTTOM,
+                            MotionToast.LONG_DURATION,
+                            null
+                        )
+                        binding.progressBar.isVisible = false
+                    }
+
+                    is Resource.Loading -> {
+                        binding.progressBar.isVisible = true
+                    }
+
+                    is Resource.Success -> {
+                        binding.progressBar.isVisible = false
+                        adapter.submitData(it.dataFetched)
+                    }
+                }
+            }
         }
-        return root
+    }
+
+    private fun setupViews() {
+        val spanCount = 2 // 2 columns
+        val spacing = 15 // 15px
+        val includeEdge = false
+        binding.apply {
+            recyclerView.layoutManager = GridLayoutManager(context, spanCount)
+            recyclerView.addItemDecoration(
+                GridSpacingItemDecoration(
+                    spanCount, spacing, includeEdge
+                )
+            )
+            recyclerView.adapter = adapter
+        }
     }
 
     override fun onDestroyView() {

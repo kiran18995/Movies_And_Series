@@ -1,12 +1,10 @@
 package com.kiran.movie.di
 
-import android.content.Context
 import com.kiran.movie.BuildConfig
-import com.kiran.movie.api.MoviesApi
+import com.kiran.movie.api.MoviesAndSeriesApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -37,11 +35,11 @@ object AppModule {
             .connectTimeout(120, TimeUnit.SECONDS).addInterceptor(logging)
             .addInterceptor(authInterceptor).build()
 
-        return Retrofit.Builder().baseUrl(MoviesApi.BASE_URL).client(client)
+        return Retrofit.Builder().baseUrl(MoviesAndSeriesApi.BASE_URL).client(client)
             .addConverterFactory(GsonConverterFactory.create()).build()
     }
 
     @Provides
     @Singleton
-    fun provideMoviesAPi(retrofit: Retrofit): MoviesApi = retrofit.create(MoviesApi::class.java)
+    fun provideMoviesAPi(retrofit: Retrofit): MoviesAndSeriesApi = retrofit.create(MoviesAndSeriesApi::class.java)
 }

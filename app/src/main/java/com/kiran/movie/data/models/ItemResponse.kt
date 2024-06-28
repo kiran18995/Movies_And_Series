@@ -2,14 +2,14 @@ package com.kiran.movie.data.models
 
 import com.google.gson.annotations.SerializedName
 
-data class MovieResponse(
+data class ItemResponse(
     val page: Int,
-    val results: List<Movie>,
+    val results: List<Item>,
     @SerializedName("total_pages") val totalPages: Int,
     @SerializedName("total_results") val totalResults: Int
 )
 
-data class Movie(
+data class Item(
     val adult: Boolean,
     @SerializedName("backdrop_path") val backdropPath: String?,
     @SerializedName("genre_ids") val genreIds: List<Int>,
