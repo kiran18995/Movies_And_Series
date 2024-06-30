@@ -1,5 +1,7 @@
 package com.kiran.movie.data.models
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 data class ItemResponse(
@@ -24,4 +26,23 @@ data class Item(
     val video: Boolean,
     @SerializedName("vote_average") val voteAverage: Double,
     @SerializedName("vote_count") val voteCount: Int
+)
+
+@Entity(tableName = "bookmarked_movies")
+data class BookmarkedMovie(
+    @PrimaryKey val key: Int,
+    val adult: Boolean,
+    val backdropPath: String?,
+    val id: Int,
+    val originalLanguage: String,
+    val originalTitle: String,
+    val overview: String,
+    val popularity: Double,
+    val posterPath: String?,
+    val releaseDate: String,
+    val title: String,
+    val video: Boolean,
+    val voteAverage: Double,
+    val voteCount: Int,
+    var isBookmarked: Boolean? = null
 )

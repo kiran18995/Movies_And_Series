@@ -1,10 +1,14 @@
 package com.kiran.movie.di
 
+import android.content.Context
+import androidx.room.Room
 import com.kiran.movie.BuildConfig
 import com.kiran.movie.api.MoviesAndSeriesApi
+import com.kiran.movie.db.BookmarkDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -42,4 +46,15 @@ object AppModule {
     @Provides
     @Singleton
     fun provideMoviesAPi(retrofit: Retrofit): MoviesAndSeriesApi = retrofit.create(MoviesAndSeriesApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSavedQuotesDatabase(@ApplicationContext context: Context):
+            BookmarkDatabase {
+        return Room.databaseBuilder(
+            context,
+            BookmarkDatabase::class.java,
+            "BookmarkDatabase"
+        ).build()
+    }
 }

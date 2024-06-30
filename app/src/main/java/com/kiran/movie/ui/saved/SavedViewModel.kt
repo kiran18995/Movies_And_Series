@@ -1,13 +1,11 @@
 package com.kiran.movie.ui.saved
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.kiran.movie.db.BookmarkDatabase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class SavedViewModel : ViewModel() {
-
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is Saved Fragment"
-    }
-    val text: LiveData<String> = _text
-}
+@HiltViewModel
+class SavedViewModel @Inject constructor(
+    private val db: BookmarkDatabase,
+) : ViewModel()
