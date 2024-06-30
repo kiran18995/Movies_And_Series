@@ -17,6 +17,4 @@ interface BookmarkDataDao {
 
     @Query("DELETE FROM bookmarked_movies WHERE id = :id")
     suspend fun deleteItem(id: String)
-
-
 }

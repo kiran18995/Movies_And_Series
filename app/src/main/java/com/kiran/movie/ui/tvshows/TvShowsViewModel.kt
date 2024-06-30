@@ -20,7 +20,6 @@ class TvShowsViewModel @Inject constructor(
     private val _seriesList = MutableStateFlow<Resource<PagingData<Item>>>(Resource.Loading())
     val seriesList: MutableStateFlow<Resource<PagingData<Item>>> = _seriesList
 
-
     init {
         fetchSeries()
     }

@@ -12,11 +12,11 @@ interface MoviesAndSeriesApi {
 
     @GET("movie/popular?language=en-US")
     suspend fun getMovies(
-        @Query("page") page:Int
-    ) : ItemResponse
+        @Query("page") page: Int
+    ): ItemResponse
 
     @GET("tv/popular?language=en-US")
     suspend fun getTvShows(
-        @Query("page") page:Int
-    ) : ItemResponse
+        @Query("page") page: Int
+    ): ItemResponse
 }

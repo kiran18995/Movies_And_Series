@@ -45,16 +45,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMoviesAPi(retrofit: Retrofit): MoviesAndSeriesApi = retrofit.create(MoviesAndSeriesApi::class.java)
+    fun provideMoviesAPi(retrofit: Retrofit): MoviesAndSeriesApi =
+        retrofit.create(MoviesAndSeriesApi::class.java)
 
     @Provides
     @Singleton
-    fun provideSavedQuotesDatabase(@ApplicationContext context: Context):
-            BookmarkDatabase {
+    fun provideSavedQuotesDatabase(@ApplicationContext context: Context): BookmarkDatabase {
         return Room.databaseBuilder(
-            context,
-            BookmarkDatabase::class.java,
-            "BookmarkDatabase"
+            context, BookmarkDatabase::class.java, "BookmarkDatabase"
         ).build()
     }
 }

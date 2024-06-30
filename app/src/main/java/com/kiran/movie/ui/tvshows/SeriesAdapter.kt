@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
@@ -14,9 +13,10 @@ import com.facebook.shimmer.ShimmerFrameLayout
 import com.kiran.movie.R
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.databinding.ItemCardThumbnailBinding
+import com.kiran.movie.ui.movies.MoviesAdapter
 
 class SeriesAdapter(private val shimmerLayoutItems: ShimmerFrameLayout) :
-    PagingDataAdapter<Item, SeriesAdapter.SeriesViewHolder>(DiffCallback()) {
+    PagingDataAdapter<Item, SeriesAdapter.SeriesViewHolder>(MoviesAdapter.DiffCallback()) {
 
     override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
         val series = getItem(position)
@@ -51,16 +51,6 @@ class SeriesAdapter(private val shimmerLayoutItems: ShimmerFrameLayout) :
             return ShimmerDrawable().apply {
                 setShimmer(shimmer)
             }
-        }
-    }
-
-    class DiffCallback : DiffUtil.ItemCallback<Item>() {
-        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
-            return oldItem == newItem
         }
     }
 }

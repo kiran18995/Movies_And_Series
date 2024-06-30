@@ -6,8 +6,7 @@ import com.kiran.movie.api.MoviesAndSeriesApi
 import com.kiran.movie.data.models.Item
 
 class MoviesAndSeriesDataSource(
-    private val moviesAndSeriesApi: MoviesAndSeriesApi,
-    private val isMovie: Boolean
+    private val moviesAndSeriesApi: MoviesAndSeriesApi, private val isMovie: Boolean
 ) : PagingSource<Int, Item>() {
 
     companion object {
@@ -21,7 +20,10 @@ class MoviesAndSeriesDataSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Item> {
         try {
             val position = params.key ?: STARTING_PAGE_INDEX
-            val response = if (isMovie) moviesAndSeriesApi.getMovies(position) else moviesAndSeriesApi.getTvShows(position)
+            val response =
+                if (isMovie) moviesAndSeriesApi.getMovies(position) else moviesAndSeriesApi.getTvShows(
+                    position
+                )
             return LoadResult.Page(
                 data = response.results,
                 prevKey = null,
