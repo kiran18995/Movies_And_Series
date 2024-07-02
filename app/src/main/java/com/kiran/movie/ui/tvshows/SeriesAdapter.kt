@@ -9,19 +9,18 @@ import coil.load
 import coil.transform.RoundedCornersTransformation
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerDrawable
-import com.facebook.shimmer.ShimmerFrameLayout
 import com.kiran.movie.R
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.databinding.ItemCardThumbnailBinding
 import com.kiran.movie.ui.movies.MoviesAdapter
 
-class SeriesAdapter(private val shimmerLayoutItems: ShimmerFrameLayout) :
+class SeriesAdapter :
     PagingDataAdapter<Item, SeriesAdapter.SeriesViewHolder>(MoviesAdapter.DiffCallback()) {
 
     override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
         val series = getItem(position)
         if (series != null) {
-            holder.bind(shimmerLayoutItems, series)
+            holder.bind(series)
         }
     }
 
@@ -33,8 +32,7 @@ class SeriesAdapter(private val shimmerLayoutItems: ShimmerFrameLayout) :
 
     class SeriesViewHolder(private val binding: ItemCardThumbnailBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(shimmerLayoutItems: ShimmerFrameLayout, item: Item) {
-            shimmerLayoutItems.stopShimmer()
+        fun bind(item: Item) {
             binding.itemImage.load("https://image.tmdb.org/t/p/w500${item.posterPath}") {
                 transformations(RoundedCornersTransformation(25f))
                 placeholder(showPlaceHolderShimmer())

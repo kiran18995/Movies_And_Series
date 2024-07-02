@@ -27,7 +27,7 @@ class MoviesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMoviesBinding.inflate(inflater, container, false)
-        adapter = MoviesAdapter(binding.shimmerLayoutItems)
+        adapter = MoviesAdapter()
         return binding.root
     }
 
@@ -51,11 +51,9 @@ class MoviesFragment : Fragment() {
                             MotionToast.LONG_DURATION,
                             null
                         )
-                        binding.shimmerLayoutItems.stopShimmer()
                     }
 
                     is Resource.Loading -> {
-                        binding.shimmerLayoutItems.startShimmer()
                     }
 
                     is Resource.Success -> {

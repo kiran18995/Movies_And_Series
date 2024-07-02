@@ -28,7 +28,7 @@ class TvShowsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentTvShowsBinding.inflate(inflater, container, false)
-        adapter = SeriesAdapter(binding.shimmerLayoutItems)
+        adapter = SeriesAdapter()
         return binding.root
     }
 
@@ -52,11 +52,9 @@ class TvShowsFragment : Fragment() {
                             MotionToast.LONG_DURATION,
                             null
                         )
-                        binding.shimmerLayoutItems.stopShimmer()
                     }
 
                     is Resource.Loading -> {
-                        binding.shimmerLayoutItems.startShimmer()
                     }
 
                     is Resource.Success -> {
