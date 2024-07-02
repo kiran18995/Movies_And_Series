@@ -12,9 +12,9 @@ interface BookmarkDataDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItem(quote: BookmarkedMovie): Long
 
-    @Query("SELECT * FROM bookmarked_movies")
+    @Query("SELECT * FROM bookmarkdatabase")
     suspend fun getAllBookmarks(): List<BookmarkedMovie>
 
-    @Query("DELETE FROM bookmarked_movies WHERE id = :id")
+    @Query("DELETE FROM bookmarkdatabase WHERE id = :id")
     suspend fun deleteItem(id: String)
 }

@@ -28,7 +28,7 @@ data class Item(
     @SerializedName("vote_count") val voteCount: Int
 )
 
-@Entity(tableName = "bookmarked_movies")
+@Entity(tableName = "BookmarkDatabase")
 data class BookmarkedMovie(
     @PrimaryKey val key: Int,
     val adult: Boolean,

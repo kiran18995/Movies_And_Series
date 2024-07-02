@@ -22,6 +22,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
     private const val AUTHORIZATION_TOKEN = BuildConfig.API_READ_ACCESS_TOKEN
+    private const val AUTHORIZATION = "Authorization"
+    private const val BEARER = "Bearer"
+    private const val TIMEOUT = 120L
+    private const val BOOKMARK_DATABASE = "BookmarkDatabase"
 
     @Provides
     @Singleton
@@ -31,12 +35,12 @@ object AppModule {
 
         val authInterceptor = Interceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer $AUTHORIZATION_TOKEN").build()
+                .addHeader(AUTHORIZATION, "$BEARER $AUTHORIZATION_TOKEN").build()
             chain.proceed(request)
         }
 
-        val client = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS)
-            .connectTimeout(120, TimeUnit.SECONDS).addInterceptor(logging)
+        val client = OkHttpClient.Builder().readTimeout(TIMEOUT, TimeUnit.SECONDS)
+            .connectTimeout(TIMEOUT, TimeUnit.SECONDS).addInterceptor(logging)
             .addInterceptor(authInterceptor).build()
 
         return Retrofit.Builder().baseUrl(MoviesAndSeriesApi.BASE_URL).client(client)
@@ -52,7 +56,7 @@ object AppModule {
     @Singleton
     fun provideSavedQuotesDatabase(@ApplicationContext context: Context): BookmarkDatabase {
         return Room.databaseBuilder(
-            context, BookmarkDatabase::class.java, "BookmarkDatabase"
+            context, BookmarkDatabase::class.java, BOOKMARK_DATABASE
         ).build()
     }
 }
