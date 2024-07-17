@@ -103,5 +103,6 @@ dependencies {
 
 
     implementation(libs.motiontoast)
+    debugImplementation(libs.leakcanary.android)
 
 }
