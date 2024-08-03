@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.kiran.movie.data.models.Item
-import com.kiran.movie.data.repository.MoviesAndSeriesRepository
+import com.kiran.movie.data.repository.MoviesAndSeriesRepositoryImpl
 import com.kiran.movie.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MoviesViewModel @Inject constructor(
-    private val repository: MoviesAndSeriesRepository
+    private val repository: MoviesAndSeriesRepositoryImpl
 ) : ViewModel() {
 
     private val _moviesList = MutableStateFlow<Resource<PagingData<Item>>>(Resource.Loading())
@@ -28,7 +28,7 @@ class MoviesViewModel @Inject constructor(
     private fun fetchMovies() {
         viewModelScope.launch {
             try {
-                repository.getMovies(true).cachedIn(viewModelScope).collect { pagingData ->
+                repository.getList(true).cachedIn(viewModelScope).collect { pagingData ->
                     _moviesList.value = Resource.Success(pagingData)
                 }
             } catch (e: Exception) {
