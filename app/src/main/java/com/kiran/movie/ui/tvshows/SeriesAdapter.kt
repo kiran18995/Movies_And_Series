@@ -9,6 +9,7 @@ import coil.load
 import coil.transform.RoundedCornersTransformation
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerDrawable
+import com.kiran.movie.BuildConfig
 import com.kiran.movie.R
 import com.kiran.movie.data.interfaces.BookmarkClickListener
 import com.kiran.movie.data.models.Item
@@ -37,7 +38,7 @@ class SeriesAdapter(private val viewModel: TvShowsViewModel) :
         private val bookmarkClickListener: BookmarkClickListener
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Item) {
-            binding.itemImage.load("https://image.tmdb.org/t/p/w500${item.posterPath}") {
+            binding.itemImage.load(BuildConfig.BASE_IMAGE_URL + item.posterPath) {
                 transformations(RoundedCornersTransformation(25f))
                 placeholder(showPlaceHolderShimmer())
             }
