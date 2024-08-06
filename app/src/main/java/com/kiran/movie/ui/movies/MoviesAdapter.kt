@@ -11,12 +11,9 @@ import coil.transform.RoundedCornersTransformation
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerDrawable
 import com.kiran.movie.R
+import com.kiran.movie.data.interfaces.BookmarkClickListener
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.databinding.ItemCardThumbnailBinding
-
-interface BookmarkClickListener {
-    fun onBookmarkClick(item: Item, position: Int)
-}
 
 class MoviesAdapter(private val viewModel: MoviesViewModel) :
     PagingDataAdapter<Item, MoviesAdapter.MovieViewHolder>(DiffCallback()), BookmarkClickListener {
