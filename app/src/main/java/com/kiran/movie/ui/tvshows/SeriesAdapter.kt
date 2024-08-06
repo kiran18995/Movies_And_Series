@@ -12,10 +12,12 @@ import com.facebook.shimmer.ShimmerDrawable
 import com.kiran.movie.R
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.databinding.ItemCardThumbnailBinding
+import com.kiran.movie.ui.movies.BookmarkClickListener
 import com.kiran.movie.ui.movies.MoviesAdapter
 
-class SeriesAdapter :
-    PagingDataAdapter<Item, SeriesAdapter.SeriesViewHolder>(MoviesAdapter.DiffCallback()) {
+class SeriesAdapter(private val viewModel: TvShowsViewModel) :
+    PagingDataAdapter<Item, SeriesAdapter.SeriesViewHolder>(MoviesAdapter.DiffCallback()),
+    BookmarkClickListener {
 
     override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
         val series = getItem(position)
@@ -27,16 +29,24 @@ class SeriesAdapter :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SeriesViewHolder {
         val binding =
             ItemCardThumbnailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return SeriesViewHolder(binding)
+        return SeriesViewHolder(binding, this)
     }
 
-    class SeriesViewHolder(private val binding: ItemCardThumbnailBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    class SeriesViewHolder(
+        private val binding: ItemCardThumbnailBinding,
+        private val bookmarkClickListener: BookmarkClickListener
+    ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Item) {
             binding.itemImage.load("https://image.tmdb.org/t/p/w500${item.posterPath}") {
                 transformations(RoundedCornersTransformation(25f))
                 placeholder(showPlaceHolderShimmer())
             }
+            binding.bookmark.setOnClickListener {
+                bookmarkClickListener.onBookmarkClick(item, bindingAdapterPosition)
+            }
+            val bookmarkIcon =
+                if (item.isBookmarked) R.drawable.ic_bookmarked else R.drawable.ic_un_bookmarked
+            binding.bookmark.setImageResource(bookmarkIcon)
         }
 
         private fun showPlaceHolderShimmer(): ShimmerDrawable {
@@ -50,5 +60,11 @@ class SeriesAdapter :
                 setShimmer(shimmer)
             }
         }
+    }
+
+    override fun onBookmarkClick(item: Item, position: Int) {
+        viewModel.toggleBookmark(item)
+        item.isBookmarked = !item.isBookmarked
+        notifyItemChanged(position)
     }
 }

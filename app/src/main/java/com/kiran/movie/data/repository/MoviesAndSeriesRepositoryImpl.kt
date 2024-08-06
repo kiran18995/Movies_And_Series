@@ -4,7 +4,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.kiran.movie.api.MoviesAndSeriesApi
-import com.kiran.movie.data.models.BookmarkedMovie
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.data.paging.MoviesAndSeriesDataSource
 import com.kiran.movie.db.BookmarkDatabase
@@ -12,30 +11,39 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class MoviesAndSeriesRepositoryImpl @Inject constructor(
-    private val moviesAndSeriesApi: MoviesAndSeriesApi,
-    private val bookmarkDatabase: BookmarkDatabase
+    private val moviesAndSeriesApi: MoviesAndSeriesApi, bookmarkDatabase: BookmarkDatabase
 ) : MoviesAndSeriesRepository {
+    private val dao = bookmarkDatabase.bookmarkedMovieDao()
 
-    override fun getList(isMovie: Boolean): Flow<PagingData<Item>> {
+    override fun getTvShows(isMovie: Boolean): Flow<PagingData<Item>> {
         return Pager(
             config = PagingConfig(
-                pageSize = 2,
-                enablePlaceholders = false,
-                prefetchDistance = 20,
+                pageSize = 2, enablePlaceholders = false, prefetchDistance = 20,
             ),
-            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie) }
-        ).flow
+            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie) }).flow
     }
 
-    override suspend fun insertBookmarkedMovie(movie: BookmarkedMovie) {
-        bookmarkDatabase.bookmarkedMovieDao().insertItem(movie)
+    override fun getMovies(isMovie: Boolean): Flow<PagingData<Item>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 2, enablePlaceholders = false, prefetchDistance = 20,
+            ),
+            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie) }).flow
     }
 
-    override suspend fun deleteBookmarkedMovie(movieId: String) {
-        bookmarkDatabase.bookmarkedMovieDao().deleteItem(movieId)
+    override suspend fun toggleBookmark(item: Item) {
+        if (item.isBookmarked) {
+            dao.deleteItem(item.id)
+            item.isBookmarked = false
+        } else {
+            dao.insertItem(item)
+            item.isBookmarked = true
+        }
     }
 
-    override suspend fun getAllBookmarkedMovies(): List<BookmarkedMovie> {
-        return bookmarkDatabase.bookmarkedMovieDao().getAllBookmarks()
+    override suspend fun isBookmarked(itemId: Int): Boolean {
+        return dao.getBookmark(itemId) != null
     }
+
+    override suspend fun getBookmarkedIds(): List<Int> = dao.getAllBookmarkedIds()
 }

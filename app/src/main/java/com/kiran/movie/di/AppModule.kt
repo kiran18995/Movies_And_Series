@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.kiran.movie.BuildConfig
 import com.kiran.movie.api.MoviesAndSeriesApi
+import com.kiran.movie.data.repository.MoviesAndSeriesRepository
+import com.kiran.movie.data.repository.MoviesAndSeriesRepositoryImpl
 import com.kiran.movie.db.BookmarkDatabase
 import dagger.Module
 import dagger.Provides
@@ -56,7 +58,18 @@ object AppModule {
     @Singleton
     fun provideSavedQuotesDatabase(@ApplicationContext context: Context): BookmarkDatabase {
         return Room.databaseBuilder(
-            context, BookmarkDatabase::class.java, BOOKMARK_DATABASE
-        ).build()
+            context,
+            BookmarkDatabase::class.java,
+            BOOKMARK_DATABASE
+        ).fallbackToDestructiveMigration().build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMoviesAndSeriesRepository(
+        api: MoviesAndSeriesApi,
+        bookmarkDatabase: BookmarkDatabase
+    ): MoviesAndSeriesRepository {
+        return MoviesAndSeriesRepositoryImpl(api, bookmarkDatabase)
     }
 }

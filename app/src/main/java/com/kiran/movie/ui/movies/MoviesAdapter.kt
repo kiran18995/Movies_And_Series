@@ -14,12 +14,17 @@ import com.kiran.movie.R
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.databinding.ItemCardThumbnailBinding
 
-class MoviesAdapter : PagingDataAdapter<Item, MoviesAdapter.MovieViewHolder>(DiffCallback()) {
+interface BookmarkClickListener {
+    fun onBookmarkClick(item: Item, position: Int)
+}
+
+class MoviesAdapter(private val viewModel: MoviesViewModel) :
+    PagingDataAdapter<Item, MoviesAdapter.MovieViewHolder>(DiffCallback()), BookmarkClickListener {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieViewHolder {
         val binding =
             ItemCardThumbnailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MovieViewHolder(binding)
+        return MovieViewHolder(binding, this)
     }
 
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
@@ -29,13 +34,28 @@ class MoviesAdapter : PagingDataAdapter<Item, MoviesAdapter.MovieViewHolder>(Dif
         }
     }
 
-    class MovieViewHolder(private val binding: ItemCardThumbnailBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    override fun onBookmarkClick(item: Item, position: Int) {
+        viewModel.toggleBookmark(item)
+        item.isBookmarked = !item.isBookmarked
+        notifyItemChanged(position)
+    }
+
+    inner class MovieViewHolder(
+        private val binding: ItemCardThumbnailBinding,
+        private val bookmarkClickListener: BookmarkClickListener
+    ) : RecyclerView.ViewHolder(binding.root) {
+
         fun bind(item: Item) {
             binding.itemImage.load("https://image.tmdb.org/t/p/w500${item.posterPath}") {
                 transformations(RoundedCornersTransformation(25f))
                 placeholder(showPlaceHolderShimmer())
             }
+            binding.bookmark.setOnClickListener {
+                bookmarkClickListener.onBookmarkClick(item, bindingAdapterPosition)
+            }
+            val bookmarkIcon =
+                if (item.isBookmarked) R.drawable.ic_bookmarked else R.drawable.ic_un_bookmarked
+            binding.bookmark.setImageResource(bookmarkIcon)
         }
 
         private fun showPlaceHolderShimmer(): ShimmerDrawable {

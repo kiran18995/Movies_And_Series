@@ -27,7 +27,7 @@ class MoviesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMoviesBinding.inflate(inflater, container, false)
-        adapter = MoviesAdapter()
+        adapter = MoviesAdapter(viewModel)
         return binding.root
     }
 

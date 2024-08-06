@@ -28,7 +28,7 @@ class TvShowsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentTvShowsBinding.inflate(inflater, container, false)
-        adapter = SeriesAdapter()
+        adapter = SeriesAdapter(viewModel)
         return binding.root
     }
 

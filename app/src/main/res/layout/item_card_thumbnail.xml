@@ -21,6 +21,10 @@
         app:layout_constraintTop_toTopOf="@+id/itemImage"
         android:layout_marginTop="@dimen/dimen_4"
         android:layout_marginEnd="@dimen/dimen_4"
+        android:paddingStart="@dimen/dimen_16"
+        android:paddingEnd="0dp"
+        android:paddingTop="0dp"
+        android:paddingBottom="@dimen/dimen_16"
         android:src="@drawable/ic_un_bookmarked"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
