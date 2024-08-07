@@ -26,7 +26,7 @@ class TvShowsViewModel @Inject constructor(
         fetchSeries()
     }
 
-    private fun fetchSeries() {
+    fun fetchSeries() {
         viewModelScope.launch {
             try {
                 val bookmarkedIds = repository.getBookmarkedIds()

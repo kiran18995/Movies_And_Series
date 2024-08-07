@@ -36,6 +36,7 @@ class TvShowsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
         setupObserver()
+        viewModel.fetchSeries()
     }
 
     private fun setupObserver() {

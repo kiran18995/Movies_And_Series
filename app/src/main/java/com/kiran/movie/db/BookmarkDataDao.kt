@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.kiran.movie.data.models.Item
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BookmarkDataDao {
@@ -14,7 +15,7 @@ interface BookmarkDataDao {
     suspend fun insertItem(item: Item): Long
 
     @Query("SELECT * FROM bookmarkdatabase")
-    suspend fun getAllBookmarks(): List<Item>
+    fun getAllBookmarks(): Flow<List<Item>>
 
     @Query("DELETE FROM bookmarkdatabase WHERE id = :id")
     suspend fun deleteItem(id: Int)

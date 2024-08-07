@@ -10,4 +10,5 @@ interface MoviesAndSeriesRepository {
     suspend fun isBookmarked(itemId: Int): Boolean
     suspend fun toggleBookmark(item: Item)
     suspend fun getBookmarkedIds(): List<Int>
+    suspend fun getAllBookmark(): Flow<List<Item>>
 }

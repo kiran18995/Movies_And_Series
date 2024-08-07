@@ -45,5 +45,9 @@ class MoviesAndSeriesRepositoryImpl @Inject constructor(
         return dao.getBookmark(itemId) != null
     }
 
+    override suspend fun getAllBookmark() : Flow<List<Item>> {
+        return dao.getAllBookmarks()
+    }
+
     override suspend fun getBookmarkedIds(): List<Int> = dao.getAllBookmarkedIds()
 }

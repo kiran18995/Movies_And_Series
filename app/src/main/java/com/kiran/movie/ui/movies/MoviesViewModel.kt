@@ -26,7 +26,7 @@ class MoviesViewModel @Inject constructor(
         fetchMovies()
     }
 
-    private fun fetchMovies() {
+    fun fetchMovies() {
         viewModelScope.launch {
             try {
                 val bookmarkedIds = repository.getBookmarkedIds()

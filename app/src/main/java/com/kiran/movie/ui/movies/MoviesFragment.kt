@@ -35,6 +35,7 @@ class MoviesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
         setupObserver()
+        viewModel.fetchMovies()
     }
 
     private fun setupObserver() {
@@ -57,7 +58,7 @@ class MoviesFragment : Fragment() {
                     }
 
                     is Resource.Success -> {
-                        adapter.submitData(it.dataFetched)
+                        adapter.submitData(lifecycle, it.dataFetched)
                     }
                 }
             }
