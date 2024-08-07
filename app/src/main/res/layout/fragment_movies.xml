@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
         android:paddingBottom="@dimen/dimen_16"
-        android:text="@string/popular_now"
+        android:text="@string/popular_movies"
         android:textColor="@color/white"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
