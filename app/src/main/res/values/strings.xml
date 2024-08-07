@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Movies</string>
     <string name="title_movies">Movies</string>
@@ -11,4 +12,8 @@
     <string name="bookmark_click_icon_desc">bookmark click icon</string>
     <string name="popular_movies">Popular Movies</string>
     <string name="popular_tv_shows">Popular Tv Shows</string>
+    <string name="tv_shows">Tv Shows</string>
+    <string name="movies">Movies</string>
+    <string name="no_bookmarks">No Bookmarks</string>
+    <string name="no_bookmark_icon">no bookmark icon</string>
 </resources>

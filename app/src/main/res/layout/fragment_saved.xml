@@ -12,11 +12,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
-        android:text="Movies"
+        android:paddingBottom="@dimen/dimen_16"
+        android:text="@string/movies"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="18sp"
-        android:paddingBottom="@dimen/dimen_16"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -24,11 +24,12 @@
         android:id="@+id/no_bookmark_icon"
         android:layout_width="120dp"
         android:layout_height="120dp"
+        android:contentDescription="@string/no_bookmark_icon"
         android:src="@drawable/no_bookmark"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/no_data"
@@ -36,7 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
-        android:text="No Bookmarks"
+        android:text="@string/no_bookmarks"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="26sp"
@@ -49,8 +50,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Tv Shows"
         android:paddingBottom="@dimen/dimen_16"
+        android:text="@string/tv_shows"
         android:textAlignment="center"
         android:textColor="@color/black_600"
         android:textSize="18sp"

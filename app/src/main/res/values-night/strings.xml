@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Movies</string>
+    <string name="title_movies">Movies</string>
+    <string name="title_tv_shows">TV Shows</string>">
+    <string name="title_saved">Saved</string>
     <string name="app_logo_for_splash_screen">App logo for splash screen</string>
     <string name="profile_icon_desc">Profile icon</string>
     <string name="search_icon_desc">Search Icon</string>
@@ -8,4 +12,7 @@
     <string name="bookmark_click_icon_desc">bookmark click icon</string>
     <string name="popular_movies">Popular Movies</string>
     <string name="popular_tv_shows">Popular Tv Shows</string>
+    <string name="tv_shows">Tv Shows</string>
+    <string name="movies">Movies</string>
+    <string name="no_bookmarks">No Bookmarks</string>
 </resources>
