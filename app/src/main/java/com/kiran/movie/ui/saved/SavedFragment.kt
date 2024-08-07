@@ -60,6 +60,13 @@ class SavedFragment : Fragment(), BookmarkClickListener {
                     }
 
                     is Resource.Success -> {
+                        if (it.dataFetched.isEmpty()) {
+                            binding.noBookmarkIcon.visibility = View.VISIBLE
+                            binding.noData.visibility = View.VISIBLE
+                        } else {
+                            binding.noBookmarkIcon.visibility = View.GONE
+                            binding.noData.visibility = View.GONE
+                        }
                         adapter.setItems(it.dataFetched)
                     }
                 }

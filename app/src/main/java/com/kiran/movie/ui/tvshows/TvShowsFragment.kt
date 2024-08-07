@@ -36,6 +36,10 @@ class TvShowsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
         setupObserver()
+    }
+
+    override fun onResume() {
+        super.onResume()
         viewModel.fetchSeries()
     }
 

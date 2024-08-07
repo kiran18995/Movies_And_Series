@@ -35,6 +35,10 @@ class MoviesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
         setupObserver()
+    }
+
+    override fun onResume() {
+        super.onResume()
         viewModel.fetchMovies()
     }
 
@@ -58,7 +62,7 @@ class MoviesFragment : Fragment() {
                     }
 
                     is Resource.Success -> {
-                        adapter.submitData(lifecycle, it.dataFetched)
+                        adapter.submitData(it.dataFetched)
                     }
                 }
             }
