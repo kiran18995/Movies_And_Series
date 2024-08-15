@@ -26,7 +26,7 @@ object AppModule {
     private const val AUTHORIZATION_TOKEN = BuildConfig.API_READ_ACCESS_TOKEN
     private const val AUTHORIZATION = "Authorization"
     private const val BEARER = "Bearer"
-    private const val TIMEOUT = 120L
+    private const val TIMEOUT = 60L
     private const val BOOKMARK_DATABASE = "BookmarkDatabase"
 
     @Provides

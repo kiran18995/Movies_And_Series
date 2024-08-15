@@ -74,14 +74,14 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-        // Dagger Hilt dependencies
-        implementation(libs.hilt.android)
-        ksp(libs.hilt.compiler)
+    // Dagger Hilt dependencies
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
-        // Retrofit + Gson dependencies
-        implementation(libs.retrofit)
-        implementation(libs.converter.gson)
-        implementation(libs.logging.interceptor)
+    // Retrofit + Gson dependencies
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor)
 
     // Paging 3
     implementation(libs.androidx.paging.runtime.ktx)
