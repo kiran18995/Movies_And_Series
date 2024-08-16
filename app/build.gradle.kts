@@ -103,8 +103,7 @@ dependencies {
     // Coil
     implementation(libs.coil)
 
-
-    implementation(libs.motiontoast)
+    //leak canary
     debugImplementation(libs.leakcanary.android)
 
 }

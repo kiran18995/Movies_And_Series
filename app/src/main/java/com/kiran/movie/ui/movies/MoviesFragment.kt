@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -12,9 +13,8 @@ import com.kiran.movie.databinding.FragmentMoviesBinding
 import com.kiran.movie.utils.GridSpacingItemDecoration
 import com.kiran.movie.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.launch
-import www.sanju.motiontoast.MotionToast
-import www.sanju.motiontoast.MotionToastStyle
 
 @AndroidEntryPoint
 class MoviesFragment : Fragment() {
@@ -47,15 +47,12 @@ class MoviesFragment : Fragment() {
             viewModel.moviesList.collect {
                 when (it) {
                     is Resource.Error -> {
-                        MotionToast.darkToast(
-                            requireActivity(),
-                            "ERROR",
-                            it.toString(),
-                            MotionToastStyle.ERROR,
-                            MotionToast.GRAVITY_BOTTOM,
-                            MotionToast.LONG_DURATION,
-                            null
-                        )
+                        Toasty.error(
+                            requireContext(),
+                            "This is an error toast.",
+                            Toast.LENGTH_SHORT,
+                            true
+                        ).show()
                     }
 
                     is Resource.Loading -> {
