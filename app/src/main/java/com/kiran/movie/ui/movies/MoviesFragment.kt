@@ -37,11 +37,6 @@ class MoviesFragment : Fragment() {
         setupObserver()
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.fetchMovies()
-    }
-
     private fun setupObserver() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.moviesList.collect {
@@ -79,6 +74,11 @@ class MoviesFragment : Fragment() {
             )
             recyclerView.adapter = adapter
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.fetchMovies()
     }
 
     override fun onDestroyView() {
