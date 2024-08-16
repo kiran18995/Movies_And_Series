@@ -5,8 +5,8 @@ import com.kiran.movie.data.models.Item
 import kotlinx.coroutines.flow.Flow
 
 interface MoviesAndSeriesRepository {
-    fun getMovies(isMovie: Boolean): Flow<PagingData<Item>>
-    fun getTvShows(isMovie: Boolean): Flow<PagingData<Item>>
+    suspend fun getMovies(isMovie: Boolean): Flow<PagingData<Item>>
+    suspend fun getTvShows(isMovie: Boolean): Flow<PagingData<Item>>
     suspend fun isBookmarked(itemId: Int): Boolean
     suspend fun toggleBookmark(item: Item)
     suspend fun getBookmarkedIds(): List<Int>

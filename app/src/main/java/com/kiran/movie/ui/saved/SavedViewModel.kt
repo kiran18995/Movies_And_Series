@@ -7,6 +7,7 @@ import com.kiran.movie.data.repository.MoviesAndSeriesRepository
 import com.kiran.movie.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,13 +20,13 @@ class SavedViewModel @Inject constructor(
     val moviesList: MutableStateFlow<Resource<List<Item>>> = _moviesList
 
     init {
-        fetchMovies()
+        fetchBookmarks()
     }
 
-    private fun fetchMovies() {
+    fun fetchBookmarks() {
         viewModelScope.launch {
             try {
-                repository.getAllBookmark().collect {
+                repository.getAllBookmark().collectLatest {
                     _moviesList.value = Resource.Success(it)
                 }
             } catch (e: Exception) {

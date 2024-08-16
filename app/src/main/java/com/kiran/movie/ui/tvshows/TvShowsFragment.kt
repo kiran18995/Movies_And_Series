@@ -14,6 +14,7 @@ import com.kiran.movie.utils.GridSpacingItemDecoration
 import com.kiran.movie.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -36,16 +37,12 @@ class TvShowsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
         setupObserver()
-    }
-
-    override fun onPause() {
-        super.onPause()
         viewModel.fetchSeries()
     }
 
     private fun setupObserver() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.seriesList.collect {
+            viewModel.seriesList.collectLatest {
                 when (it) {
                     is Resource.Error -> {
                         Toasty.error(

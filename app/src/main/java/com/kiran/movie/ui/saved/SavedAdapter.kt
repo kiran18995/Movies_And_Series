@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
@@ -15,28 +16,18 @@ import com.kiran.movie.data.interfaces.BookmarkClickListener
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.databinding.ItemCardThumbnailBinding
 
-class SavedAdapter(private val bookmarkClickListener: BookmarkClickListener) :
-    RecyclerView.Adapter<SavedAdapter.MovieViewHolder>() {
-
-    private var items: List<Item> = emptyList()
+class SavedAdapter(private val viewModel: SavedViewModel) :
+    ListAdapter<Item, SavedAdapter.MovieViewHolder>(DiffCallback()), BookmarkClickListener {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieViewHolder {
-        val binding = ItemCardThumbnailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MovieViewHolder(binding, bookmarkClickListener)
+        val binding =
+            ItemCardThumbnailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return MovieViewHolder(binding, this)
     }
 
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
-        val item = items[position]
+        val item = getItem(position) // Use getItem() provided by ListAdapter
         holder.bind(item)
-    }
-
-    override fun getItemCount(): Int = items.size
-
-    fun setItems(newItems: List<Item>) {
-        val diffCallback = ItemDiffCallback(items, newItems)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        items = newItems
-        diffResult.dispatchUpdatesTo(this)
     }
 
     inner class MovieViewHolder(
@@ -69,21 +60,18 @@ class SavedAdapter(private val bookmarkClickListener: BookmarkClickListener) :
         }
     }
 
-    class ItemDiffCallback(
-        private val oldList: List<Item>,
-        private val newList: List<Item>
-    ) : DiffUtil.Callback() {
-
-        override fun getOldListSize(): Int = oldList.size
-
-        override fun getNewListSize(): Int = newList.size
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition].id == newList[newItemPosition].id
+    class DiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+            return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition] == newList[newItemPosition]
+        override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+            return oldItem == newItem
         }
     }
+
+    override fun onBookmarkClick(item: Item, position: Int) {
+        viewModel.toggleBookmark(item)
+        item.isBookmarked = !item.isBookmarked
+        notifyItemChanged(position)    }
 }

@@ -16,6 +16,7 @@ import com.kiran.movie.utils.GridSpacingItemDecoration
 import com.kiran.movie.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -30,7 +31,7 @@ class SavedFragment : Fragment(), BookmarkClickListener {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSavedBinding.inflate(inflater, container, false)
-        adapter = SavedAdapter(this)
+        adapter = SavedAdapter(viewModel)
         return binding.root
     }
 
@@ -38,11 +39,12 @@ class SavedFragment : Fragment(), BookmarkClickListener {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
         setupObserver()
+        viewModel.fetchBookmarks()
     }
 
     private fun setupObserver() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.moviesList.collect {
+            viewModel.moviesList.collectLatest {
                 when (it) {
                     is Resource.Error -> {
                         Toasty.error(
@@ -64,7 +66,7 @@ class SavedFragment : Fragment(), BookmarkClickListener {
                             binding.noBookmarkIcon.visibility = View.GONE
                             binding.noData.visibility = View.GONE
                         }
-                        adapter.setItems(it.dataFetched)
+                        adapter.submitList(it.dataFetched)
                     }
                 }
             }

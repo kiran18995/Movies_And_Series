@@ -15,7 +15,7 @@ class MoviesAndSeriesRepositoryImpl @Inject constructor(
 ) : MoviesAndSeriesRepository {
     private val dao = bookmarkDatabase.bookmarkedMovieDao()
 
-    override fun getTvShows(isMovie: Boolean): Flow<PagingData<Item>> {
+    override suspend fun getTvShows(isMovie: Boolean): Flow<PagingData<Item>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 2, enablePlaceholders = false, prefetchDistance = 20,
@@ -23,7 +23,7 @@ class MoviesAndSeriesRepositoryImpl @Inject constructor(
             pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie) }).flow
     }
 
-    override fun getMovies(isMovie: Boolean): Flow<PagingData<Item>> {
+    override suspend fun getMovies(isMovie: Boolean): Flow<PagingData<Item>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 2, enablePlaceholders = false, prefetchDistance = 20,
