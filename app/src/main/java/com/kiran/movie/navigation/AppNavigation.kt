@@ -36,6 +36,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,8 +46,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.kiran.movie.R
 import com.kiran.movie.core.ui.MainViewModel
+import com.kiran.movie.core.ui.R
 import com.kiran.movie.ui.movies.MoviesScreen
 import com.kiran.movie.ui.saved.SavedScreen
 import com.kiran.movie.ui.tvshows.TvShowsScreen
@@ -81,13 +82,14 @@ fun AppNavigation(
     val searchQuery by mainViewModel.searchQuery.collectAsState()
     val searchHint by mainViewModel.searchHint.collectAsState()
     val isListEmpty by mainViewModel.isListEmpty.collectAsState()
+    val context = LocalContext.current
 
     // Clear search on destination change and reset scroll offsets
     LaunchedEffect(currentDestination?.route) {
         mainViewModel.updateSearchQuery("")
         when (currentDestination?.route) {
-            Screen.Movies.route -> mainViewModel.updateSearchHint("Search for movies")
-            Screen.TvShows.route -> mainViewModel.updateSearchHint("Search for tv shows")
+            Screen.Movies.route -> mainViewModel.updateSearchHint(context.getString(com.kiran.movie.core.ui.R.string.search_hint_movies))
+            Screen.TvShows.route -> mainViewModel.updateSearchHint(context.getString(com.kiran.movie.core.ui.R.string.search_hint_tv_shows))
         }
         topBarOffsetHeightPx = 0f
         bottomBarOffsetHeightPx = 0f
@@ -174,9 +176,28 @@ fun AppNavigation(
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
             NavHost(navController, startDestination = Screen.Movies.route) {
-                composable(Screen.Movies.route) { MoviesScreen(mainViewModel, innerPadding) }
-                composable(Screen.TvShows.route) { TvShowsScreen(mainViewModel, innerPadding) }
-                composable(Screen.Saved.route) { SavedScreen(mainViewModel, innerPadding) }
+                composable(Screen.Movies.route) {
+                    MoviesScreen(
+                        searchQuery = searchQuery,
+                        onListEmptyStateChange = { mainViewModel.updateIsListEmpty(it) },
+                        innerPadding = innerPadding
+                    )
+                }
+                composable(Screen.TvShows.route) {
+                    TvShowsScreen(
+                        searchQuery = searchQuery,
+                        onListEmptyStateChange = { mainViewModel.updateIsListEmpty(it) },
+                        innerPadding = innerPadding
+                    )
+                }
+                composable(Screen.Saved.route) {
+                    SavedScreen(
+                        searchQuery = searchQuery,
+                        onListEmptyStateChange = { mainViewModel.updateIsListEmpty(it) },
+                        onUpdateSearchHint = { mainViewModel.updateSearchHint(it) },
+                        innerPadding = innerPadding
+                    )
+                }
             }
         }
     }

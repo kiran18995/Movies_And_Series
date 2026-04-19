@@ -2,6 +2,7 @@ package com.kiran.movie.ui.tvshows
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
@@ -16,6 +17,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,10 +36,19 @@ class TvShowsViewModel @Inject constructor(
     val effect = _effect.receiveAsFlow()
 
     private var currentQuery = ""
+    private val searchQueryFlow = MutableStateFlow("")
     private val bookmarkedIdsFlow = MutableStateFlow<Set<Int>>(emptySet())
 
     init {
-        onEvent(TvShowsContract.Event.FetchSeries)
+        viewModelScope.launch {
+            searchQueryFlow
+                .debounce(300L)
+                .distinctUntilChanged()
+                .collectLatest { query ->
+                    currentQuery = query
+                    fetchSeries()
+                }
+        }
     }
 
     fun onEvent(event: TvShowsContract.Event) {
@@ -45,8 +57,7 @@ class TvShowsViewModel @Inject constructor(
             is TvShowsContract.Event.ToggleBookmark -> toggleBookmark(event.item)
             is TvShowsContract.Event.RefreshBookmarks -> refreshBookmarks()
             is TvShowsContract.Event.Search -> {
-                currentQuery = event.query
-                fetchSeries()
+                searchQueryFlow.value = event.query
             }
         }
     }
@@ -56,7 +67,7 @@ class TvShowsViewModel @Inject constructor(
             try {
                 bookmarkedIdsFlow.value = getBookmarkedIdsUseCase().toSet()
             } catch (e: Exception) {
-                // ignore
+                Log.e("TvShowsViewModel", "Failed to refresh bookmarks", e)
             }
         }
     }
@@ -83,18 +94,16 @@ class TvShowsViewModel @Inject constructor(
     private fun toggleBookmark(item: com.kiran.movie.data.models.Item) {
         viewModelScope.launch {
             try {
-                val currentSet = bookmarkedIdsFlow.value.toMutableSet()
-                if (currentSet.contains(item.id)) {
-                    currentSet.remove(item.id)
-                } else {
-                    currentSet.add(item.id)
-                }
-                bookmarkedIdsFlow.value = currentSet
                 toggleBookmarkUseCase(item)
+                bookmarkedIdsFlow.value = getBookmarkedIdsUseCase().toSet()
             } catch (e: Exception) {
                 _effect.send(TvShowsContract.Effect.ShowToast("Failed to toggle bookmark"))
-                bookmarkedIdsFlow.value = getBookmarkedIdsUseCase().toSet()
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        _effect.close()
     }
 }

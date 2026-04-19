@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -47,7 +49,8 @@ class SavedViewModel @Inject constructor(
     private fun fetchBookmarks() {
         viewModelScope.launch {
             try {
-                combine(getAllBookmarksUseCase(), _isMovieFilter, searchQuery) { items, isMovie, query ->
+                val debouncedSearch = searchQuery.debounce(300L).distinctUntilChanged()
+                combine(getAllBookmarksUseCase(), _isMovieFilter, debouncedSearch) { items, isMovie, query ->
                     items.filter { it.isMovie == isMovie && (query.isBlank() || it.title?.contains(query, ignoreCase = true) == true) }
                 }.collectLatest { filteredItems ->
                     _state.value = SavedContract.State.Success(filteredItems)
@@ -67,5 +70,10 @@ class SavedViewModel @Inject constructor(
                 _effect.send(SavedContract.Effect.ShowToast("Failed to toggle bookmark"))
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        _effect.close()
     }
 }

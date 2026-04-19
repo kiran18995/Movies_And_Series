@@ -10,8 +10,11 @@ import com.kiran.movie.db.BookmarkDatabase
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+import androidx.room.withTransaction
+
 class MoviesAndSeriesRepositoryImpl @Inject constructor(
-    private val moviesAndSeriesApi: MoviesAndSeriesApi, bookmarkDatabase: BookmarkDatabase
+    private val moviesAndSeriesApi: MoviesAndSeriesApi,
+    private val bookmarkDatabase: BookmarkDatabase
 ) : MoviesAndSeriesRepository {
     private val dao = bookmarkDatabase.bookmarkedMovieDao()
 
@@ -32,13 +35,15 @@ class MoviesAndSeriesRepositoryImpl @Inject constructor(
     }
 
     override suspend fun toggleBookmark(item: Item) {
-        val exists = dao.getBookmark(item.id) != null
-        if (exists) {
-            dao.deleteItem(item.id)
-            item.isBookmarked = false
-        } else {
-            item.isBookmarked = true
-            dao.insertItem(item)
+        bookmarkDatabase.withTransaction {
+            val exists = dao.getBookmark(item.id) != null
+            if (exists) {
+                dao.deleteItem(item.id)
+                item.isBookmarked = false
+            } else {
+                item.isBookmarked = true
+                dao.insertItem(item)
+            }
         }
     }
 

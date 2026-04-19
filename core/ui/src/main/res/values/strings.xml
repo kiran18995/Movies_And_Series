@@ -16,4 +16,8 @@
     <string name="movies">Movies</string>
     <string name="no_bookmarks">No Bookmarks</string>
     <string name="no_bookmark_icon">no bookmark icon</string>
+    <string name="search_hint_movies">Search for movies</string>
+    <string name="search_hint_tv_shows">Search for tv shows</string>
+    <string name="search_hint_saved_movies">Search for saved movies</string>
+    <string name="search_hint_saved_tv_shows">Search for saved tv shows</string>
 </resources>

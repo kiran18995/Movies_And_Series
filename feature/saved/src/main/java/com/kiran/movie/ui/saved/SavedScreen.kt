@@ -29,21 +29,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.kiran.movie.core.ui.MainViewModel
+import com.kiran.movie.core.ui.components.EmptyStateScreen
 import com.kiran.movie.core.ui.components.ItemCard
 import com.kiran.movie.core.ui.R
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import es.dmoral.toasty.Toasty
 
 @Composable
 fun SavedScreen(
-    mainViewModel: MainViewModel,
+    searchQuery: String,
+    onListEmptyStateChange: (Boolean) -> Unit,
+    onUpdateSearchHint: (String) -> Unit,
     innerPadding: PaddingValues,
     viewModel: SavedViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val isMovieTab by viewModel.isMovieTab.collectAsState()
     val context = LocalContext.current
-    val searchQuery by mainViewModel.searchQuery.collectAsState()
 
     LaunchedEffect(searchQuery) {
         viewModel.onEvent(SavedContract.Event.Search(searchQuery))
@@ -51,9 +54,9 @@ fun SavedScreen(
 
     LaunchedEffect(isMovieTab) {
         if (isMovieTab) {
-            mainViewModel.updateSearchHint("Search for saved movies")
+            onUpdateSearchHint(context.getString(R.string.search_hint_saved_movies))
         } else {
-            mainViewModel.updateSearchHint("Search for saved tv shows")
+            onUpdateSearchHint(context.getString(R.string.search_hint_saved_tv_shows))
         }
     }
 
@@ -74,7 +77,7 @@ fun SavedScreen(
     ) {
         when (val currentState = state) {
             is SavedContract.State.Loading -> {
-                LaunchedEffect(Unit) { mainViewModel.updateIsListEmpty(true) }
+                LaunchedEffect(Unit) { onListEmptyStateChange(true) }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
@@ -83,29 +86,22 @@ fun SavedScreen(
                 }
             }
             is SavedContract.State.Error -> {
-                LaunchedEffect(Unit) { mainViewModel.updateIsListEmpty(true) }
+                LaunchedEffect(Unit) { onListEmptyStateChange(true) }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }
             is SavedContract.State.Success -> {
                 LaunchedEffect(currentState.items.size) {
-                    mainViewModel.updateIsListEmpty(currentState.items.isEmpty())
+                    onListEmptyStateChange(currentState.items.isEmpty())
                 }
                 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(
-                        top = 16.dp + innerPadding.calculateTopPadding(),
-                        bottom = innerPadding.calculateBottomPadding()
-                    ),
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
-                ) {
-                    item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                if (currentState.items.isEmpty()) {
+                    Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp)
+                                .padding(horizontal = 15.dp, vertical = 16.dp)
                         ) {
                             Text(
                                 text = stringResource(id = R.string.movies),
@@ -125,15 +121,55 @@ fun SavedScreen(
                                     .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) }
                             )
                         }
-                    }
-                    
-                    items(currentState.items) { item ->
-                        ItemCard(
-                            item = item,
-                            onBookmarkClick = {
-                                viewModel.onEvent(SavedContract.Event.ToggleBookmark(it))
-                            }
+                        EmptyStateScreen(
+                            icon = Icons.Default.Star,
+                            message = if (searchQuery.isNotEmpty()) "No saved items found for '$searchQuery'" else "No bookmarks yet",
+                            modifier = Modifier.weight(1f)
                         )
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(
+                            top = 16.dp + innerPadding.calculateTopPadding(),
+                            bottom = innerPadding.calculateBottomPadding()
+                        ),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
+                    ) {
+                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.movies),
+                                    color = if (isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .padding(end = 16.dp)
+                                        .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(true)) }
+                                )
+                                Text(
+                                    text = stringResource(id = R.string.tv_shows),
+                                    color = if (!isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) }
+                                )
+                            }
+                        }
+                        
+                        items(currentState.items) { item ->
+                            ItemCard(
+                                item = item,
+                                onBookmarkClick = {
+                                    viewModel.onEvent(SavedContract.Event.ToggleBookmark(it))
+                                }
+                            )
+                        }
                     }
                 }
             }
