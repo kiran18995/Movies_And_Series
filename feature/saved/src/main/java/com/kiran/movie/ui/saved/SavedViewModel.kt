@@ -1,5 +1,6 @@
 package com.kiran.movie.ui.saved
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kiran.movie.domain.usecase.GetAllBookmarksUseCase
@@ -34,31 +35,32 @@ class SavedViewModel @Inject constructor(
     private val searchQuery = MutableStateFlow("")
 
     init {
-        onEvent(SavedContract.Event.FetchBookmarks)
-    }
-
-    fun onEvent(event: SavedContract.Event) {
-        when (event) {
-            is SavedContract.Event.FetchBookmarks -> fetchBookmarks()
-            is SavedContract.Event.ToggleBookmark -> toggleBookmark(event.item)
-            is SavedContract.Event.ChangeTab -> _isMovieFilter.value = event.isMovie
-            is SavedContract.Event.Search -> searchQuery.value = event.query
-        }
-    }
-
-    private fun fetchBookmarks() {
         viewModelScope.launch {
+            // Debounce search at initialization — single pipeline, consistent with MoviesViewModel
+            val debouncedSearch = searchQuery.debounce(300L).distinctUntilChanged()
             try {
-                val debouncedSearch = searchQuery.debounce(300L).distinctUntilChanged()
                 combine(getAllBookmarksUseCase(), _isMovieFilter, debouncedSearch) { items, isMovie, query ->
-                    items.filter { it.isMovie == isMovie && (query.isBlank() || it.title?.contains(query, ignoreCase = true) == true) }
+                    items.filter {
+                        it.isMovie == isMovie &&
+                            (query.isBlank() || it.title?.contains(query, ignoreCase = true) == true)
+                    }
                 }.collectLatest { filteredItems ->
                     _state.value = SavedContract.State.Success(filteredItems)
                 }
             } catch (e: Exception) {
+                Log.e("SavedViewModel", "Failed to fetch bookmarks", e)
                 _state.value = SavedContract.State.Error(e.message ?: "An error occurred")
                 _effect.send(SavedContract.Effect.ShowToast(e.message ?: "An error occurred"))
             }
+        }
+    }
+
+    fun onEvent(event: SavedContract.Event) {
+        when (event) {
+            is SavedContract.Event.FetchBookmarks -> { /* No-op: reactive pipeline handles this */ }
+            is SavedContract.Event.ToggleBookmark -> toggleBookmark(event.item)
+            is SavedContract.Event.ChangeTab -> _isMovieFilter.value = event.isMovie
+            is SavedContract.Event.Search -> searchQuery.value = event.query
         }
     }
 
@@ -67,6 +69,7 @@ class SavedViewModel @Inject constructor(
             try {
                 toggleBookmarkUseCase(item)
             } catch (e: Exception) {
+                Log.e("SavedViewModel", "Failed to toggle bookmark", e)
                 _effect.send(SavedContract.Effect.ShowToast("Failed to toggle bookmark"))
             }
         }

@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
@@ -14,8 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -37,7 +34,8 @@ class MoviesViewModel @Inject constructor(
 
     private var currentQuery = ""
     private val searchQueryFlow = MutableStateFlow("")
-    private val bookmarkedIdsFlow = MutableStateFlow<Set<Int>>(emptySet())
+    private val _bookmarkedIds = MutableStateFlow<Set<Int>>(emptySet())
+    val bookmarkedIds: StateFlow<Set<Int>> = _bookmarkedIds.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -65,7 +63,7 @@ class MoviesViewModel @Inject constructor(
     private fun refreshBookmarks() {
         viewModelScope.launch {
             try {
-                bookmarkedIdsFlow.value = getBookmarkedIdsUseCase().toSet()
+                _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
             } catch (e: Exception) {
                 Log.e("MoviesViewModel", "Failed to refresh bookmarks", e)
             }
@@ -75,14 +73,9 @@ class MoviesViewModel @Inject constructor(
     private fun fetchMovies() {
         viewModelScope.launch {
             try {
-                bookmarkedIdsFlow.value = getBookmarkedIdsUseCase().toSet()
+                _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
                 val flow = getMoviesUseCase(true, currentQuery)
                     .cachedIn(viewModelScope)
-                    .combine(bookmarkedIdsFlow) { pagingData, bookmarkedIds ->
-                        pagingData.map { item ->
-                            item.copy(isBookmarked = bookmarkedIds.contains(item.id))
-                        }
-                    }
                 _state.value = MoviesContract.State.Success(flow)
             } catch (e: Exception) {
                 _state.value = MoviesContract.State.Error(e.message ?: "An error occurred")
@@ -95,7 +88,7 @@ class MoviesViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 toggleBookmarkUseCase(item)
-                bookmarkedIdsFlow.value = getBookmarkedIdsUseCase().toSet()
+                _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
             } catch (e: Exception) {
                 _effect.send(MoviesContract.Effect.ShowToast("Failed to toggle bookmark"))
             }

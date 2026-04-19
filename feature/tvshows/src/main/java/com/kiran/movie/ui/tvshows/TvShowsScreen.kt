@@ -47,6 +47,7 @@ fun TvShowsScreen(
     viewModel: TvShowsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val bookmarkedIds by viewModel.bookmarkedIds.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -132,8 +133,9 @@ fun TvShowsScreen(
                         items(lazyPagingItems.itemCount) { index ->
                             val item = lazyPagingItems[index]
                             if (item != null) {
+                                val displayItem = item.copy(isBookmarked = bookmarkedIds.contains(item.id))
                                 ItemCard(
-                                    item = item,
+                                    item = displayItem,
                                     onBookmarkClick = {
                                         viewModel.onEvent(TvShowsContract.Event.ToggleBookmark(it))
                                     }
