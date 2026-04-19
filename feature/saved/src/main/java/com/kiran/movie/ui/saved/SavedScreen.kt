@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -36,6 +37,7 @@ import es.dmoral.toasty.Toasty
 @Composable
 fun SavedScreen(
     mainViewModel: MainViewModel,
+    innerPadding: PaddingValues,
     viewModel: SavedViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -45,6 +47,14 @@ fun SavedScreen(
 
     LaunchedEffect(searchQuery) {
         viewModel.onEvent(SavedContract.Event.Search(searchQuery))
+    }
+
+    LaunchedEffect(isMovieTab) {
+        if (isMovieTab) {
+            mainViewModel.updateSearchHint("Search for saved movies")
+        } else {
+            mainViewModel.updateSearchHint("Search for saved tv shows")
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -62,32 +72,9 @@ fun SavedScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.movies),
-                color = if (isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(true)) }
-            )
-            Text(
-                text = stringResource(id = R.string.tv_shows),
-                color = if (!isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) }
-            )
-        }
-
         when (val currentState = state) {
             is SavedContract.State.Loading -> {
+                LaunchedEffect(Unit) { mainViewModel.updateIsListEmpty(true) }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
@@ -96,15 +83,50 @@ fun SavedScreen(
                 }
             }
             is SavedContract.State.Error -> {
+                LaunchedEffect(Unit) { mainViewModel.updateIsListEmpty(true) }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }
             is SavedContract.State.Success -> {
+                LaunchedEffect(currentState.items.size) {
+                    mainViewModel.updateIsListEmpty(currentState.items.isEmpty())
+                }
+                
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(
+                        top = 16.dp + innerPadding.calculateTopPadding(),
+                        bottom = innerPadding.calculateBottomPadding()
+                    ),
                     modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
                 ) {
+                    item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.movies),
+                                color = if (isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(true)) }
+                            )
+                            Text(
+                                text = stringResource(id = R.string.tv_shows),
+                                color = if (!isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) }
+                            )
+                        }
+                    }
+                    
                     items(currentState.items) { item ->
                         ItemCard(
                             item = item,

@@ -32,11 +32,12 @@ class TvShowsViewModel @Inject constructor(
     private val _effect = Channel<TvShowsContract.Effect>()
     val effect = _effect.receiveAsFlow()
 
+    private var currentQuery = ""
+    private val bookmarkedIdsFlow = MutableStateFlow<Set<Int>>(emptySet())
+
     init {
         onEvent(TvShowsContract.Event.FetchSeries)
     }
-
-    private var currentQuery = ""
 
     fun onEvent(event: TvShowsContract.Event) {
         when (event) {
@@ -59,8 +60,6 @@ class TvShowsViewModel @Inject constructor(
             }
         }
     }
-
-    private val bookmarkedIdsFlow = MutableStateFlow<Set<Int>>(emptySet())
 
     private fun fetchSeries() {
         viewModelScope.launch {

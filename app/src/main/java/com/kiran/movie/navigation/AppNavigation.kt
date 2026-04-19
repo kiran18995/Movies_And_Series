@@ -1,8 +1,8 @@
 package com.kiran.movie.navigation
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,21 +19,25 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -68,59 +72,78 @@ fun AppNavigation(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    var isSearchVisible by remember { mutableStateOf(false) }
-    val searchQuery by mainViewModel.searchQuery.collectAsState()
+    var topBarHeightPx by remember { mutableFloatStateOf(0f) }
+    var bottomBarHeightPx by remember { mutableFloatStateOf(0f) }
 
-    // Hide search on destination change
+    var topBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
+    var bottomBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
+
+    val searchQuery by mainViewModel.searchQuery.collectAsState()
+    val searchHint by mainViewModel.searchHint.collectAsState()
+    val isListEmpty by mainViewModel.isListEmpty.collectAsState()
+
+    // Clear search on destination change and reset scroll offsets
     LaunchedEffect(currentDestination?.route) {
-        isSearchVisible = false
         mainViewModel.updateSearchQuery("")
+        when (currentDestination?.route) {
+            Screen.Movies.route -> mainViewModel.updateSearchHint("Search for movies")
+            Screen.TvShows.route -> mainViewModel.updateSearchHint("Search for tv shows")
+        }
+        topBarOffsetHeightPx = 0f
+        bottomBarOffsetHeightPx = 0f
+    }
+
+    LaunchedEffect(isListEmpty) {
+        if (isListEmpty) {
+            topBarOffsetHeightPx = 0f
+            bottomBarOffsetHeightPx = 0f
+        }
+    }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (isListEmpty) return Offset.Zero
+                
+                val delta = available.y
+                val newTopOffset = topBarOffsetHeightPx + delta
+                topBarOffsetHeightPx = newTopOffset.coerceIn(-topBarHeightPx, 0f)
+
+                val newBottomOffset = bottomBarOffsetHeightPx - delta
+                bottomBarOffsetHeightPx = newBottomOffset.coerceIn(0f, bottomBarHeightPx)
+
+                return Offset.Zero
+            }
+        }
     }
 
     Scaffold(
+        modifier = Modifier.nestedScroll(nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = { Text(text = "Movie App") },
-                actions = {
-                    AnimatedVisibility(visible = isSearchVisible) {
-                        TextField(
-                            value = searchQuery,
-                            onValueChange = { mainViewModel.updateSearchQuery(it) },
-                            modifier = Modifier.fillMaxWidth(0.6f),
-                            placeholder = { Text("Search...") },
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search",
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(28.dp)
-                            .clickable {
-                                isSearchVisible = !isSearchVisible
-                                if (!isSearchVisible) {
-                                    mainViewModel.updateSearchQuery("")
-                                }
-                            },
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
+            Box(
+                modifier = Modifier
+                    .onSizeChanged { topBarHeightPx = it.height.toFloat() }
+                    .offset { IntOffset(x = 0, y = topBarOffsetHeightPx.roundToInt()) }
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                androidx.compose.material3.SearchBar(
+                    query = searchQuery,
+                    onQueryChange = { mainViewModel.updateSearchQuery(it) },
+                    onSearch = { },
+                    active = false,
+                    onActiveChange = { },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(searchHint) },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") }
+                ) {}
+            }
         },
         bottomBar = {
             NavigationBar(
+                modifier = Modifier
+                    .onSizeChanged { bottomBarHeightPx = it.height.toFloat() }
+                    .offset { IntOffset(x = 0, y = bottomBarOffsetHeightPx.roundToInt()) },
                 containerColor = MaterialTheme.colorScheme.surface,
             ) {
                 items.forEach { screen ->
@@ -149,11 +172,11 @@ fun AppNavigation(
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier.fillMaxSize()) {
             NavHost(navController, startDestination = Screen.Movies.route) {
-                composable(Screen.Movies.route) { MoviesScreen(mainViewModel) }
-                composable(Screen.TvShows.route) { TvShowsScreen(mainViewModel) }
-                composable(Screen.Saved.route) { SavedScreen(mainViewModel) }
+                composable(Screen.Movies.route) { MoviesScreen(mainViewModel, innerPadding) }
+                composable(Screen.TvShows.route) { TvShowsScreen(mainViewModel, innerPadding) }
+                composable(Screen.Saved.route) { SavedScreen(mainViewModel, innerPadding) }
             }
         }
     }

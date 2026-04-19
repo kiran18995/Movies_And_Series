@@ -32,11 +32,12 @@ class MoviesViewModel @Inject constructor(
     private val _effect = Channel<MoviesContract.Effect>()
     val effect = _effect.receiveAsFlow()
 
+    private var currentQuery = ""
+    private val bookmarkedIdsFlow = MutableStateFlow<Set<Int>>(emptySet())
+
     init {
         onEvent(MoviesContract.Event.FetchMovies)
     }
-
-    private var currentQuery = ""
 
     fun onEvent(event: MoviesContract.Event) {
         when (event) {
@@ -59,8 +60,6 @@ class MoviesViewModel @Inject constructor(
             }
         }
     }
-
-    private val bookmarkedIdsFlow = MutableStateFlow<Set<Int>>(emptySet())
 
     private fun fetchMovies() {
         viewModelScope.launch {

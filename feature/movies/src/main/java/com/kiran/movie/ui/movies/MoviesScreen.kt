@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,6 +40,7 @@ import es.dmoral.toasty.Toasty
 @Composable
 fun MoviesScreen(
     mainViewModel: MainViewModel,
+    innerPadding: PaddingValues,
     viewModel: MoviesViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -77,16 +79,9 @@ fun MoviesScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Text(
-            text = stringResource(id = R.string.popular_movies),
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 15.dp, top = 16.dp, bottom = 16.dp)
-        )
-
         when (val currentState = state) {
             is MoviesContract.State.Loading -> {
+                LaunchedEffect(Unit) { mainViewModel.updateIsListEmpty(true) }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
@@ -95,6 +90,7 @@ fun MoviesScreen(
                 }
             }
             is MoviesContract.State.Error -> {
+                LaunchedEffect(Unit) { mainViewModel.updateIsListEmpty(true) }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
@@ -102,10 +98,28 @@ fun MoviesScreen(
             is MoviesContract.State.Success -> {
                 val lazyPagingItems = currentState.pagingDataFlow.collectAsLazyPagingItems()
                 
+                LaunchedEffect(lazyPagingItems.itemCount) {
+                    mainViewModel.updateIsListEmpty(lazyPagingItems.itemCount == 0)
+                }
+                
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(
+                        top = 16.dp + innerPadding.calculateTopPadding(),
+                        bottom = innerPadding.calculateBottomPadding()
+                    ),
                     modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
                 ) {
+                    item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                        Text(
+                            text = stringResource(id = R.string.popular_movies),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+                    
                     items(lazyPagingItems.itemCount) { index ->
                         val item = lazyPagingItems[index]
                         if (item != null) {
