@@ -1,5 +1,6 @@
 package com.kiran.movie.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -73,10 +74,7 @@ fun AppNavigation(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    var topBarHeightPx by remember { mutableFloatStateOf(0f) }
     var bottomBarHeightPx by remember { mutableFloatStateOf(0f) }
-
-    var topBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
     var bottomBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
 
     val searchQuery by mainViewModel.searchQuery.collectAsState()
@@ -91,13 +89,11 @@ fun AppNavigation(
             Screen.Movies.route -> mainViewModel.updateSearchHint(context.getString(com.kiran.movie.core.ui.R.string.search_hint_movies))
             Screen.TvShows.route -> mainViewModel.updateSearchHint(context.getString(com.kiran.movie.core.ui.R.string.search_hint_tv_shows))
         }
-        topBarOffsetHeightPx = 0f
         bottomBarOffsetHeightPx = 0f
     }
 
     LaunchedEffect(isListEmpty) {
         if (isListEmpty) {
-            topBarOffsetHeightPx = 0f
             bottomBarOffsetHeightPx = 0f
         }
     }
@@ -108,8 +104,6 @@ fun AppNavigation(
                 if (isListEmpty) return Offset.Zero
                 
                 val delta = available.y
-                val newTopOffset = topBarOffsetHeightPx + delta
-                topBarOffsetHeightPx = newTopOffset.coerceIn(-topBarHeightPx, 0f)
 
                 val newBottomOffset = bottomBarOffsetHeightPx - delta
                 bottomBarOffsetHeightPx = newBottomOffset.coerceIn(0f, bottomBarHeightPx)
@@ -124,9 +118,8 @@ fun AppNavigation(
         topBar = {
             Box(
                 modifier = Modifier
-                    .onSizeChanged { topBarHeightPx = it.height.toFloat() }
-                    .offset { IntOffset(x = 0, y = topBarOffsetHeightPx.roundToInt()) }
                     .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 androidx.compose.material3.SearchBar(
