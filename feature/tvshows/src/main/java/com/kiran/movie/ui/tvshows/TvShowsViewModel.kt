@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
 import androidx.paging.cachedIn
+import com.kiran.movie.core.ui.models.TvCategory
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
 import com.kiran.movie.domain.usecase.GetTvShowsUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
@@ -37,6 +38,9 @@ class TvShowsViewModel @Inject constructor(
     private val _bookmarkedIds = MutableStateFlow<Set<Int>>(emptySet())
     val bookmarkedIds: StateFlow<Set<Int>> = _bookmarkedIds.asStateFlow()
 
+    private val _selectedCategory = MutableStateFlow(TvCategory.POPULAR)
+    val selectedCategory: StateFlow<TvCategory> = _selectedCategory.asStateFlow()
+
     init {
         viewModelScope.launch {
             searchQueryFlow
@@ -57,6 +61,12 @@ class TvShowsViewModel @Inject constructor(
             is TvShowsContract.Event.Search -> {
                 searchQueryFlow.value = event.query
             }
+            is TvShowsContract.Event.SelectCategory -> {
+                if (_selectedCategory.value != event.category) {
+                    _selectedCategory.value = event.category
+                    fetchSeries()
+                }
+            }
         }
     }
 
@@ -74,7 +84,7 @@ class TvShowsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
-                val flow = getTvShowsUseCase(false, currentQuery)
+                val flow = getTvShowsUseCase(false, currentQuery, _selectedCategory.value.endpoint)
                     .cachedIn(viewModelScope)
                 _state.value = TvShowsContract.State.Success(flow)
             } catch (e: Exception) {

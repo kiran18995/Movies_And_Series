@@ -2,6 +2,7 @@ package com.kiran.movie.ui.tvshows
 
 import androidx.paging.PagingData
 import com.kiran.movie.data.models.Item
+import com.kiran.movie.core.ui.models.TvCategory
 import kotlinx.coroutines.flow.Flow
 
 class TvShowsContract {
@@ -10,6 +11,7 @@ class TvShowsContract {
         object RefreshBookmarks : Event()
         data class ToggleBookmark(val item: Item) : Event()
         data class Search(val query: String) : Event()
+        data class SelectCategory(val category: TvCategory) : Event()
     }
 
     sealed class State {
@@ -22,3 +24,4 @@ class TvShowsContract {
         data class ShowToast(val message: String) : Effect()
     }
 }
+

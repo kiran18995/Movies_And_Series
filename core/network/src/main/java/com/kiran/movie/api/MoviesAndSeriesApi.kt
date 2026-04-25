@@ -3,6 +3,7 @@ package com.kiran.movie.api
 import com.kiran.movie.core.network.BuildConfig
 import com.kiran.movie.data.models.ItemResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MoviesAndSeriesApi {
@@ -21,12 +22,25 @@ interface MoviesAndSeriesApi {
     ): ItemResponse
 
     /**
+     * Fetch movies by category (popular, top_rated, upcoming, now_playing).
+     */
+    @GET("movie/{category}?language=en-US")
+    suspend fun getMoviesByCategory(
+        @Path("category") category: String,
+        @Query("page") page: Int
+    ): ItemResponse
+
+    /**
+     * Fetch TV shows by category (popular, top_rated, airing_today, on_the_air).
+     */
+    @GET("tv/{category}?language=en-US")
+    suspend fun getTvShowsByCategory(
+        @Path("category") category: String,
+        @Query("page") page: Int
+    ): ItemResponse
+
+    /**
      * Search for movies by title.
-     *
-     * @param query The search text.
-     * @param page The pagination page number.
-     * @param includeAdult Whether to include adult content. Defaults to false.
-     * @return The item response.
      */
     @GET("search/movie?language=en-US")
     suspend fun searchMovies(
@@ -37,11 +51,6 @@ interface MoviesAndSeriesApi {
 
     /**
      * Search for TV shows by title.
-     *
-     * @param query The search text.
-     * @param page The pagination page number.
-     * @param includeAdult Whether to include adult content. Defaults to false.
-     * @return The item response.
      */
     @GET("search/tv?language=en-US")
     suspend fun searchTvShows(
@@ -50,3 +59,4 @@ interface MoviesAndSeriesApi {
         @Query("include_adult") includeAdult: Boolean = false
     ): ItemResponse
 }
+

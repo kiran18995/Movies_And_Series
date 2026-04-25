@@ -2,6 +2,7 @@ package com.kiran.movie.ui.tvshows
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,9 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +38,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.kiran.movie.core.ui.components.EmptyStateScreen
 import com.kiran.movie.core.ui.components.ItemCard
-import com.kiran.movie.core.ui.R
+import com.kiran.movie.core.ui.models.TvCategory
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import es.dmoral.toasty.Toasty
@@ -48,6 +52,7 @@ fun TvShowsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val bookmarkedIds by viewModel.bookmarkedIds.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -115,14 +120,39 @@ fun TvShowsScreen(
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(
-                            top = 16.dp + innerPadding.calculateTopPadding(),
+                            top = 8.dp + innerPadding.calculateTopPadding(),
                             bottom = innerPadding.calculateBottomPadding()
                         ),
                         modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
                     ) {
+                        // Category filter chips
+                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp)
+                            ) {
+                                items(TvCategory.entries.toList()) { category ->
+                                    FilterChip(
+                                        selected = selectedCategory == category,
+                                        onClick = {
+                                            viewModel.onEvent(TvShowsContract.Event.SelectCategory(category))
+                                        },
+                                        label = { Text(category.displayName) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        // Dynamic header based on selected category
                         item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
                             Text(
-                                text = stringResource(id = R.string.popular_tv_shows),
+                                text = "${selectedCategory.displayName} TV Shows",
                                 color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
@@ -175,3 +205,4 @@ fun TvShowsScreen(
         }
     }
 }
+
