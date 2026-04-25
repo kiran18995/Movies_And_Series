@@ -6,8 +6,10 @@ import android.util.Log
 import androidx.paging.cachedIn
 import com.kiran.movie.core.ui.models.TvCategory
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
+import com.kiran.movie.domain.usecase.GetTvShowsListUseCase
 import com.kiran.movie.domain.usecase.GetTvShowsUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
+import com.kiran.movie.data.models.Item
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +26,8 @@ import javax.inject.Inject
 class TvShowsViewModel @Inject constructor(
     private val getTvShowsUseCase: GetTvShowsUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
-    private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase
+    private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase,
+    private val getTvShowsListUseCase: GetTvShowsListUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<TvShowsContract.State>(TvShowsContract.State.Loading)
@@ -41,7 +44,11 @@ class TvShowsViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow(TvCategory.POPULAR)
     val selectedCategory: StateFlow<TvCategory> = _selectedCategory.asStateFlow()
 
+    private val _carouselItems = MutableStateFlow<List<Item>>(emptyList())
+    val carouselItems: StateFlow<List<Item>> = _carouselItems.asStateFlow()
+
     init {
+        fetchCarouselItems()
         viewModelScope.launch {
             searchQueryFlow
                 .debounce(300L)
@@ -50,6 +57,18 @@ class TvShowsViewModel @Inject constructor(
                     currentQuery = query
                     fetchSeries()
                 }
+        }
+    }
+
+    private fun fetchCarouselItems() {
+        viewModelScope.launch {
+            try {
+                // Fetch airing today tv shows for the carousel
+                val items = getTvShowsListUseCase("airing_today", 1)
+                _carouselItems.value = items
+            } catch (e: Exception) {
+                // Ignore or handle
+            }
         }
     }
 

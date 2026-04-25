@@ -24,6 +24,7 @@ import com.kiran.movie.data.models.Item
 fun ItemCard(
     item: Item,
     onBookmarkClick: (Item) -> Unit,
+    onItemClick: (Item) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -31,6 +32,7 @@ fun ItemCard(
             .fillMaxWidth()
             .height(280.dp)
             .padding(4.dp)
+            .clickable { onItemClick(item) }
     ) {
         AsyncImage(
             model = "${BuildConfig.BASE_IMAGE_URL}${item.posterPath}",

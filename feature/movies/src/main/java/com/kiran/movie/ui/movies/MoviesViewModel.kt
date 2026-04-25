@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import android.util.Log
 import androidx.paging.cachedIn
 import com.kiran.movie.core.ui.models.MovieCategory
+import com.kiran.movie.data.models.Item
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
+import com.kiran.movie.domain.usecase.GetMoviesListUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +26,8 @@ import javax.inject.Inject
 class MoviesViewModel @Inject constructor(
     private val getMoviesUseCase: GetMoviesUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
-    private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase
+    private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase,
+    private val getMoviesListUseCase: GetMoviesListUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MoviesContract.State>(MoviesContract.State.Loading)
@@ -41,7 +44,11 @@ class MoviesViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow(MovieCategory.POPULAR)
     val selectedCategory: StateFlow<MovieCategory> = _selectedCategory.asStateFlow()
 
+    private val _carouselItems = MutableStateFlow<List<Item>>(emptyList())
+    val carouselItems: StateFlow<List<Item>> = _carouselItems.asStateFlow()
+
     init {
+        fetchCarouselItems()
         viewModelScope.launch {
             searchQueryFlow
                 .debounce(300L)
@@ -50,6 +57,18 @@ class MoviesViewModel @Inject constructor(
                     currentQuery = query
                     fetchMovies()
                 }
+        }
+    }
+
+    private fun fetchCarouselItems() {
+        viewModelScope.launch {
+            try {
+                // Fetch upcoming movies for the carousel
+                val items = getMoviesListUseCase("upcoming", 1)
+                _carouselItems.value = items
+            } catch (e: Exception) {
+                // Ignore or handle
+            }
         }
     }
 

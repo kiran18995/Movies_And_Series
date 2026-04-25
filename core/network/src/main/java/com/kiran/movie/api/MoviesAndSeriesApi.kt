@@ -1,6 +1,7 @@
 package com.kiran.movie.api
 
 import com.kiran.movie.core.network.BuildConfig
+import com.kiran.movie.data.models.ItemDetails
 import com.kiran.movie.data.models.ItemResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -40,6 +41,22 @@ interface MoviesAndSeriesApi {
     ): ItemResponse
 
     /**
+     * Fetch movie details including credits and videos.
+     */
+    @GET("movie/{movie_id}?append_to_response=credits,videos&language=en-US")
+    suspend fun getMovieDetails(
+        @Path("movie_id") movieId: Int
+    ): ItemDetails
+
+    /**
+     * Fetch TV show details including credits and videos.
+     */
+    @GET("tv/{series_id}?append_to_response=credits,videos&language=en-US")
+    suspend fun getTvShowDetails(
+        @Path("series_id") seriesId: Int
+    ): ItemDetails
+
+    /**
      * Search for movies by title.
      */
     @GET("search/movie?language=en-US")
@@ -59,4 +76,5 @@ interface MoviesAndSeriesApi {
         @Query("include_adult") includeAdult: Boolean = false
     ): ItemResponse
 }
+
 
