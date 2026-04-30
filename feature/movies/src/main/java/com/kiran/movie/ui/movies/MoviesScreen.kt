@@ -192,7 +192,7 @@ fun MoviesScreen(
 
                         val itemCount = lazyPagingItems.itemCount
 
-                        items(minOf(4, itemCount)) { index ->
+                        items(minOf(2, itemCount)) { index ->
                             val item = lazyPagingItems[index]
                             if (item != null) {
                                 val displayItem = item.copy(isBookmarked = bookmarkedIds.contains(item.id))
@@ -206,7 +206,7 @@ fun MoviesScreen(
                             }
                         }
 
-                        if (itemCount >= 4 && carouselItemsList.isNotEmpty()) {
+                        if (itemCount >= 2 && carouselItemsList.isNotEmpty()) {
                             item(span = {
                                 androidx.compose.foundation.lazy.grid
                                     .GridItemSpan(maxLineSpan)
@@ -244,9 +244,9 @@ fun MoviesScreen(
                             }
                         }
 
-                        if (itemCount > 4) {
-                            items(itemCount - 4) { index ->
-                                val actualIndex = index + 4
+                        if (itemCount > 2) {
+                            items(itemCount - 2) { index ->
+                                val actualIndex = index + 2
                                 val item = lazyPagingItems[actualIndex]
                                 if (item != null) {
                                     val displayItem = item.copy(isBookmarked = bookmarkedIds.contains(item.id))
