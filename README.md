@@ -19,9 +19,13 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img width="200" alt="Screenshot_20260501_005629" src="https://github.com/user-attachments/assets/c694573f-dc9d-4bfc-aa3d-fd0ee1fef5e2" />
-  <img width="200" alt="Screenshot_20260501_005643" src="https://github.com/user-attachments/assets/05eb0302-f6ea-4ae0-a7e0-5dc113771544" />
-  <img width="200" alt="Screenshot_20260501_005951" src="https://github.com/user-attachments/assets/7c40773d-c1b8-49ef-845b-fa1f982f14c7" />
+  <img src="screenshots/movies_screen.png" width="200" alt="Movies Screen" />
+  &nbsp;&nbsp;
+  <img src="screenshots/tv_shows_screen.png" width="200" alt="TV Shows Screen" />
+  &nbsp;&nbsp;
+  <img src="screenshots/saved_movies_screen.png" width="200" alt="Saved Movies" />
+  &nbsp;&nbsp;
+  <img src="screenshots/saved_tv_shows_screen.png" width="200" alt="Saved TV Shows" />
 </p>
 
 <p align="center">
@@ -183,13 +187,13 @@ User Action  →  Event  →  ViewModel  →  Use Case  →  Repository  →  AP
 
 2. **Add your TMDB API token**
 
-   Open `gradle.properties` and add your read access token:
+   Open `local.properties` (gitignored — never commit this file) and add your read access token:
 
    ```properties
    API_READ_ACCESS_TOKEN=your_tmdb_read_access_token_here
    ```
 
-   > **Note**: The app ships with a default token for convenience, but it is recommended you use your own.
+   Get a free token at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api).
 
 3. **Build and run**
 

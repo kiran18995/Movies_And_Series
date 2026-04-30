@@ -1,8 +1,17 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.hilt)
+}
+
+// Load local.properties at the top level so the token is available in defaultConfig
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -14,7 +23,12 @@ android {
 
         val baseUrl = "https://api.themoviedb.org/3/"
         buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
-        val accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZTZlYjBkNTE3OWY3MDMxYWNmMzE0ZGI4ZTQxMTJhOSIsIm5iZiI6MTcxOTI1ODUwMi42NTkxMzIsInN1YiI6IjVjYTFiMmNkOTI1MTQxMWExODA4ZDEyZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xjTYKsio_c1M2zxwtfdpOgSyGthyjnsvzRh3ifbBFYg"
+
+        val accessToken = localProperties.getProperty("API_READ_ACCESS_TOKEN")
+            ?: error(
+                "API_READ_ACCESS_TOKEN is not set in local.properties. " +
+                "Add it as: API_READ_ACCESS_TOKEN=<your_tmdb_read_access_token>"
+            )
         buildConfigField("String", "API_READ_ACCESS_TOKEN", "\"$accessToken\"")
     }
     buildFeatures {
@@ -38,5 +52,4 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(project(":core:common"))
     api(project(":domain"))
-    implementation(project(":domain"))
 }

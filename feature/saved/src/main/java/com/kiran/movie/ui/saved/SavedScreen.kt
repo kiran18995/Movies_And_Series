@@ -21,6 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +37,8 @@ import com.kiran.movie.core.ui.components.ItemCard
 import com.kiran.movie.core.ui.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import com.kiran.movie.core.ui.details.ItemDetailsBottomSheet
+import com.kiran.movie.data.models.Item
 import es.dmoral.toasty.Toasty
 
 @Composable
@@ -47,6 +52,8 @@ fun SavedScreen(
     val state by viewModel.state.collectAsState()
     val isMovieTab by viewModel.isMovieTab.collectAsState()
     val context = LocalContext.current
+
+    var selectedItemForDetails by remember { mutableStateOf<Item?>(null) }
 
     LaunchedEffect(searchQuery) {
         viewModel.onEvent(SavedContract.Event.Search(searchQuery))
@@ -78,7 +85,10 @@ fun SavedScreen(
         when (val currentState = state) {
             is SavedContract.State.Loading -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
                         color = MaterialTheme.colorScheme.primary
@@ -87,7 +97,10 @@ fun SavedScreen(
             }
             is SavedContract.State.Error -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }
@@ -167,7 +180,8 @@ fun SavedScreen(
                                 item = item,
                                 onBookmarkClick = {
                                     viewModel.onEvent(SavedContract.Event.ToggleBookmark(it))
-                                }
+                                },
+                                onItemClick = { selectedItemForDetails = it }
                             )
                         }
                     }
@@ -175,4 +189,12 @@ fun SavedScreen(
             }
         }
     }
+
+    selectedItemForDetails?.let { item ->
+        ItemDetailsBottomSheet(
+            item = item,
+            onDismissRequest = { selectedItemForDetails = null }
+        )
+    }
 }
+

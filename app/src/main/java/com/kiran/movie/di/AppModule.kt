@@ -33,7 +33,11 @@ object AppModule {
     @Singleton
     fun provideRetrofit(): Retrofit {
         val logging = HttpLoggingInterceptor()
-        logging.level = HttpLoggingInterceptor.Level.BODY
+        logging.level = if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor.Level.BASIC
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
 
         val authInterceptor = Interceptor { chain ->
             val request = chain.request().newBuilder()

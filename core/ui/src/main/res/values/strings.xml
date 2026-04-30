@@ -10,6 +10,8 @@
     <string name="movie_thumbnails_desc">Movie thumbnails</string>
     <string name="popular_now">Popular Now</string>
     <string name="bookmark_click_icon_desc">bookmark click icon</string>
+    <string name="bookmark_add">Add to bookmarks</string>
+    <string name="bookmark_remove">Remove from bookmarks</string>
     <string name="popular_movies">Popular Movies</string>
     <string name="popular_tv_shows">Popular Tv Shows</string>
     <string name="tv_shows">Tv Shows</string>

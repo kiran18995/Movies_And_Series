@@ -2,16 +2,23 @@ package com.kiran.movie.ui.tvshows
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,11 +26,13 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,11 +43,14 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.kiran.movie.core.ui.components.EmptyStateScreen
 import com.kiran.movie.core.ui.components.ItemCard
-import com.kiran.movie.core.ui.R
+import com.kiran.movie.core.ui.models.TvCategory
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import com.kiran.movie.core.ui.details.ItemDetailsBottomSheet
+import com.kiran.movie.data.models.Item
 import es.dmoral.toasty.Toasty
 
+@androidx.compose.material3.ExperimentalMaterial3Api
 @Composable
 fun TvShowsScreen(
     searchQuery: String,
@@ -48,8 +60,12 @@ fun TvShowsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val bookmarkedIds by viewModel.bookmarkedIds.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val carouselItemsList by viewModel.carouselItems.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    var selectedItemForDetails by remember { mutableStateOf<Item?>(null) }
 
     LaunchedEffect(searchQuery) {
         viewModel.onEvent(TvShowsContract.Event.Search(searchQuery))
@@ -85,7 +101,10 @@ fun TvShowsScreen(
         when (val currentState = state) {
             is TvShowsContract.State.Loading -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
                         color = MaterialTheme.colorScheme.primary
@@ -94,7 +113,10 @@ fun TvShowsScreen(
             }
             is TvShowsContract.State.Error -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }
@@ -115,14 +137,39 @@ fun TvShowsScreen(
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(
-                            top = 16.dp + innerPadding.calculateTopPadding(),
+                            top = 8.dp + innerPadding.calculateTopPadding(),
                             bottom = innerPadding.calculateBottomPadding()
                         ),
                         modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
                     ) {
+                        // Category filter chips
+                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp)
+                            ) {
+                                items(TvCategory.entries.toList()) { category ->
+                                    FilterChip(
+                                        selected = selectedCategory == category,
+                                        onClick = {
+                                            viewModel.onEvent(TvShowsContract.Event.SelectCategory(category))
+                                        },
+                                        label = { Text(category.displayName) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        // Dynamic header based on selected category
                         item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
                             Text(
-                                text = stringResource(id = R.string.popular_tv_shows),
+                                text = "${selectedCategory.displayName} TV Shows",
                                 color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
@@ -130,7 +177,9 @@ fun TvShowsScreen(
                             )
                         }
                         
-                        items(lazyPagingItems.itemCount) { index ->
+                        val itemCount = lazyPagingItems.itemCount
+
+                        items(minOf(2, itemCount)) { index ->
                             val item = lazyPagingItems[index]
                             if (item != null) {
                                 val displayItem = item.copy(isBookmarked = bookmarkedIds.contains(item.id))
@@ -138,8 +187,56 @@ fun TvShowsScreen(
                                     item = displayItem,
                                     onBookmarkClick = {
                                         viewModel.onEvent(TvShowsContract.Event.ToggleBookmark(it))
-                                    }
+                                    },
+                                    onItemClick = { selectedItemForDetails = it }
                                 )
+                            }
+                        }
+
+                        if (itemCount >= 2 && carouselItemsList.isNotEmpty()) {
+                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                                    Text(
+                                        text = "Airing Today",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                    val carouselState = androidx.compose.material3.carousel.rememberCarouselState { carouselItemsList.size }
+                                    androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel(
+                                        state = carouselState,
+                                        preferredItemWidth = 140.dp,
+                                        itemSpacing = 8.dp,
+                                        modifier = Modifier.fillMaxWidth().height(200.dp)
+                                    ) { i ->
+                                        val carouselItem = carouselItemsList[i]
+                                        coil.compose.AsyncImage(
+                                            model = "${com.kiran.movie.core.ui.BuildConfig.BASE_IMAGE_URL}${carouselItem.posterPath}",
+                                            contentDescription = carouselItem.title,
+                                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .maskClip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                                                .clickable { selectedItemForDetails = carouselItem }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (itemCount > 2) {
+                            items(itemCount - 2) { index ->
+                                val actualIndex = index + 2
+                                val item = lazyPagingItems[actualIndex]
+                                if (item != null) {
+                                    val displayItem = item.copy(isBookmarked = bookmarkedIds.contains(item.id))
+                                    ItemCard(
+                                        item = displayItem,
+                                        onBookmarkClick = {
+                                            viewModel.onEvent(TvShowsContract.Event.ToggleBookmark(it))
+                                        },
+                                        onItemClick = { selectedItemForDetails = it }
+                                    )
+                                }
                             }
                         }
                         
@@ -174,4 +271,13 @@ fun TvShowsScreen(
             }
         }
     }
+
+    selectedItemForDetails?.let { item ->
+        ItemDetailsBottomSheet(
+            item = item,
+            onDismissRequest = { selectedItemForDetails = null }
+        )
+    }
 }
+
+

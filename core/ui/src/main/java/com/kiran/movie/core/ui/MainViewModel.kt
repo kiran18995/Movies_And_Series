@@ -12,7 +12,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _searchHint = MutableStateFlow("Search...")
+    private val _searchHint = MutableStateFlow("")
     val searchHint: StateFlow<String> = _searchHint.asStateFlow()
 
     private val _isListEmpty = MutableStateFlow(false)

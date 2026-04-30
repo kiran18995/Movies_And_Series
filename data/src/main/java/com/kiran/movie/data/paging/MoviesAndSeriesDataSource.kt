@@ -8,7 +8,8 @@ import com.kiran.movie.data.models.Item
 class MoviesAndSeriesDataSource(
     private val moviesAndSeriesApi: MoviesAndSeriesApi,
     private val isMovie: Boolean,
-    private val query: String
+    private val query: String,
+    private val category: String = "popular"
 ) : PagingSource<Int, Item>() {
 
     companion object {
@@ -30,9 +31,9 @@ class MoviesAndSeriesDataSource(
                 }
             } else {
                 if (isMovie) {
-                    moviesAndSeriesApi.getMovies(position)
+                    moviesAndSeriesApi.getMoviesByCategory(category, position)
                 } else {
-                    moviesAndSeriesApi.getTvShows(position)
+                    moviesAndSeriesApi.getTvShowsByCategory(category, position)
                 }
             }
             return LoadResult.Page(

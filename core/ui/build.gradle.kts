@@ -50,5 +50,6 @@ dependencies {
     api(libs.androidx.material3)
     api(libs.coil.compose)
     api(libs.androidx.paging.compose)
+    api(libs.androidx.hilt.navigation.compose)
     debugApi(libs.androidx.ui.tooling)
 }
