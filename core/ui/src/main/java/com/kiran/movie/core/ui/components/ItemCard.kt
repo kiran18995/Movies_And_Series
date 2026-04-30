@@ -48,7 +48,7 @@ fun ItemCard(
     onItemClick: (Item) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val cardInteractionSource = remember { MutableInteractionSource() }
+    val cardInteractionSource = remember(item.id) { MutableInteractionSource() }
     val isPressed by cardInteractionSource.collectIsPressedAsState()
 
     // Dramatic press scale
@@ -69,9 +69,9 @@ fun ItemCard(
     )
 
     // Bookmark: 360° spin + pop bounce when toggled
-    val bookmarkRotation = remember { Animatable(0f) }
-    val bookmarkAnimScale = remember { Animatable(1f) }
-    var isFirstRender by remember { mutableStateOf(true) }
+    val bookmarkRotation = remember(item.id) { Animatable(0f) }
+    val bookmarkAnimScale = remember(item.id) { Animatable(1f) }
+    var isFirstRender by remember(item.id) { mutableStateOf(true) }
 
     LaunchedEffect(item.isBookmarked) {
         if (isFirstRender) { isFirstRender = false; return@LaunchedEffect }

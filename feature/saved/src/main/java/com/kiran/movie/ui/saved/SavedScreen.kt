@@ -169,9 +169,9 @@ fun SavedScreen(
 
                     // Content slides in from correct direction on tab switch
                     AnimatedContent(
-                        targetState = isMovieTab,
+                        targetState = isMovieTab to currentState,
                         transitionSpec = {
-                            if (targetState) {
+                            if (targetState.first) {
                                 (slideInHorizontally(tween(350)) { -it } + fadeIn(tween(300)))
                                     .togetherWith(slideOutHorizontally(tween(350)) { it } + fadeOut(tween(200)))
                             } else {
@@ -180,8 +180,8 @@ fun SavedScreen(
                             }
                         },
                         label = "savedTabContent"
-                    ) { movieTab ->
-                        if (currentState.items.isEmpty()) {
+                    ) { (movieTab, state) ->
+                        if (state.items.isEmpty()) {
                             EmptyStateScreen(
                                 icon = Icons.Default.Star,
                                 message = if (searchQuery.isNotEmpty()) "No saved items found for '$searchQuery'" else "No bookmarks yet",
@@ -195,7 +195,7 @@ fun SavedScreen(
                                 ),
                                 modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
                             ) {
-                                items(currentState.items) { item ->
+                                items(state.items) { item ->
                                     ItemCard(
                                         item = item,
                                         onBookmarkClick = {

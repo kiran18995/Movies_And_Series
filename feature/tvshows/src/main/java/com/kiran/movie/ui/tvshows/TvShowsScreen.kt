@@ -237,7 +237,7 @@ fun TvShowsScreen(
                                         modifier = Modifier.fillMaxWidth().height(200.dp)
                                     ) { i ->
                                         val carouselItem = carouselItemsList[i]
-                                        val carouselInteractionSource = remember { MutableInteractionSource() }
+                                        val carouselInteractionSource = remember(carouselItem.id) { MutableInteractionSource() }
                                         val isCarouselPressed by carouselInteractionSource.collectIsPressedAsState()
                                         val carouselItemScale by animateFloatAsState(
                                             targetValue = if (isCarouselPressed) 0.93f else 1f,
