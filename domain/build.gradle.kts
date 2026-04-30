@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.androidx.paging.common.ktx)
-    implementation(libs.kotlinx.coroutines.core)
+    api(libs.androidx.paging.common.ktx)
+    api(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.room.common)
     implementation(libs.gson)
     implementation("javax.inject:javax.inject:1")

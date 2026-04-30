@@ -3,11 +3,14 @@ package com.kiran.movie.ui.movies
 import androidx.paging.PagingData
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
+import com.kiran.movie.domain.usecase.GetMoviesListUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -29,19 +32,23 @@ class MoviesViewModelTest {
     private val mockGetMoviesUseCase = mockk<GetMoviesUseCase>()
     private val mockToggleBookmarkUseCase = mockk<ToggleBookmarkUseCase>()
     private val mockGetBookmarkedIdsUseCase = mockk<GetBookmarkedIdsUseCase>()
+    private val mockGetMoviesListUseCase = mockk<GetMoviesListUseCase>()
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        
-        coEvery { mockGetMoviesUseCase.invoke(any(), any()) } returns flowOf(PagingData.empty())
+
+        // GetMoviesUseCase.invoke is NOT suspend — use plain every/verify (issue #8)
+        every { mockGetMoviesUseCase.invoke(any(), any()) } returns flowOf(PagingData.empty())
         coEvery { mockGetBookmarkedIdsUseCase.invoke() } returns emptyList()
         coEvery { mockToggleBookmarkUseCase.invoke(any()) } returns Unit
+        coEvery { mockGetMoviesListUseCase.invoke(any(), any()) } returns emptyList()
 
         viewModel = MoviesViewModel(
             mockGetMoviesUseCase,
             mockToggleBookmarkUseCase,
-            mockGetBookmarkedIdsUseCase
+            mockGetBookmarkedIdsUseCase,
+            mockGetMoviesListUseCase
         )
     }
 
@@ -63,14 +70,15 @@ class MoviesViewModelTest {
 
         // Advance time slightly, should not trigger fetch
         advanceTimeBy(100)
-        coVerify(exactly = 0) { mockGetMoviesUseCase.invoke(any(), any()) }
+        // invoke is not suspend — use plain verify (issue #8)
+        verify(exactly = 0) { mockGetMoviesUseCase.invoke(any(), any()) }
 
         // Advance time to pass debounce threshold
         advanceTimeBy(200)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Verify that only the last query was executed
-        coVerify(exactly = 1) { mockGetMoviesUseCase.invoke(true, "Spider") }
+        // Verify that only the last query was executed (issue #5: no isMovie arg)
+        verify(exactly = 1) { mockGetMoviesUseCase.invoke("Spider", any()) }
     }
 
     @Test
@@ -91,7 +99,7 @@ class MoviesViewModelTest {
             voteAverage = 0.0,
             voteCount = 0
         )
-        
+
         viewModel.onEvent(MoviesContract.Event.ToggleBookmark(testItem))
         testDispatcher.scheduler.advanceUntilIdle()
 

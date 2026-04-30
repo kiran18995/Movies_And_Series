@@ -101,7 +101,10 @@ fun TvShowsScreen(
         when (val currentState = state) {
             is TvShowsContract.State.Loading -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
                         color = MaterialTheme.colorScheme.primary
@@ -110,7 +113,10 @@ fun TvShowsScreen(
             }
             is TvShowsContract.State.Error -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }

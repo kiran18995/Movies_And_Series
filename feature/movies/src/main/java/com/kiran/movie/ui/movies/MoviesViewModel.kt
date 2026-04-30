@@ -11,17 +11,20 @@ import com.kiran.movie.domain.usecase.GetMoviesListUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class MoviesViewModel @Inject constructor(
     private val getMoviesUseCase: GetMoviesUseCase,
@@ -33,10 +36,10 @@ class MoviesViewModel @Inject constructor(
     private val _state = MutableStateFlow<MoviesContract.State>(MoviesContract.State.Loading)
     val state: StateFlow<MoviesContract.State> = _state.asStateFlow()
 
-    private val _effect = Channel<MoviesContract.Effect>()
+    // Buffered so send() in init doesn't suspend before the UI starts collecting (issue #9)
+    private val _effect = Channel<MoviesContract.Effect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
-    private var currentQuery = ""
     private val searchQueryFlow = MutableStateFlow("")
     private val _bookmarkedIds = MutableStateFlow<Set<Int>>(emptySet())
     val bookmarkedIds: StateFlow<Set<Int>> = _bookmarkedIds.asStateFlow()
@@ -53,9 +56,9 @@ class MoviesViewModel @Inject constructor(
             searchQueryFlow
                 .debounce(300L)
                 .distinctUntilChanged()
+                // Fetch runs inside collectLatest so it is cancelled when a new query arrives (issue #7)
                 .collectLatest { query ->
-                    currentQuery = query
-                    fetchMovies()
+                    fetchMovies(query)
                 }
         }
     }
@@ -63,18 +66,19 @@ class MoviesViewModel @Inject constructor(
     private fun fetchCarouselItems() {
         viewModelScope.launch {
             try {
-                // Fetch upcoming movies for the carousel
                 val items = getMoviesListUseCase("upcoming", 1)
                 _carouselItems.value = items
+            } catch (e: CancellationException) {
+                throw e // Preserve structured concurrency (issue #11)
             } catch (e: Exception) {
-                // Ignore or handle
+                // Non-critical — carousel failure is silent
             }
         }
     }
 
     fun onEvent(event: MoviesContract.Event) {
         when (event) {
-            is MoviesContract.Event.FetchMovies -> fetchMovies()
+            is MoviesContract.Event.FetchMovies -> searchQueryFlow.value = searchQueryFlow.value // re-trigger
             is MoviesContract.Event.ToggleBookmark -> toggleBookmark(event.item)
             is MoviesContract.Event.RefreshBookmarks -> refreshBookmarks()
             is MoviesContract.Event.Search -> {
@@ -83,7 +87,10 @@ class MoviesViewModel @Inject constructor(
             is MoviesContract.Event.SelectCategory -> {
                 if (_selectedCategory.value != event.category) {
                     _selectedCategory.value = event.category
-                    fetchMovies()
+                    // Emit the current query again to re-trigger collectLatest with new category
+                    searchQueryFlow.value = searchQueryFlow.value
+                    // Force a re-fetch immediately since value hasn't changed (distinctUntilChanged would skip)
+                    viewModelScope.launch { fetchMovies(searchQueryFlow.value) }
                 }
             }
         }
@@ -93,23 +100,26 @@ class MoviesViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
+            } catch (e: CancellationException) {
+                throw e // issue #11
             } catch (e: Exception) {
                 Log.e("MoviesViewModel", "Failed to refresh bookmarks", e)
             }
         }
     }
 
-    private fun fetchMovies() {
-        viewModelScope.launch {
-            try {
-                _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
-                val flow = getMoviesUseCase(true, currentQuery, _selectedCategory.value.endpoint)
-                    .cachedIn(viewModelScope)
-                _state.value = MoviesContract.State.Success(flow)
-            } catch (e: Exception) {
-                _state.value = MoviesContract.State.Error(e.message ?: "An error occurred")
-                _effect.send(MoviesContract.Effect.ShowToast(e.message ?: "An error occurred"))
-            }
+    // suspend so it executes in the caller's coroutine (collectLatest), enabling proper cancellation (issue #7)
+    private suspend fun fetchMovies(query: String) {
+        try {
+            _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
+            val flow = getMoviesUseCase(query, _selectedCategory.value.endpoint) // issue #5: no isMovie
+                .cachedIn(viewModelScope)
+            _state.value = MoviesContract.State.Success(flow)
+        } catch (e: CancellationException) {
+            throw e // issue #11
+        } catch (e: Exception) {
+            _state.value = MoviesContract.State.Error(e.message ?: "An error occurred")
+            _effect.send(MoviesContract.Effect.ShowToast(e.message ?: "An error occurred"))
         }
     }
 
@@ -118,6 +128,8 @@ class MoviesViewModel @Inject constructor(
             try {
                 toggleBookmarkUseCase(item)
                 _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
+            } catch (e: CancellationException) {
+                throw e // issue #11
             } catch (e: Exception) {
                 _effect.send(MoviesContract.Effect.ShowToast("Failed to toggle bookmark"))
             }

@@ -187,13 +187,13 @@ User Action  →  Event  →  ViewModel  →  Use Case  →  Repository  →  AP
 
 2. **Add your TMDB API token**
 
-   Open `gradle.properties` and add your read access token:
+   Open `local.properties` (gitignored — never commit this file) and add your read access token:
 
    ```properties
    API_READ_ACCESS_TOKEN=your_tmdb_read_access_token_here
    ```
 
-   > **Note**: The app ships with a default token for convenience, but it is recommended you use your own.
+   Get a free token at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api).
 
 3. **Build and run**
 

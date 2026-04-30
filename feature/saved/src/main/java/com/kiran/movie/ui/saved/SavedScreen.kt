@@ -85,7 +85,10 @@ fun SavedScreen(
         when (val currentState = state) {
             is SavedContract.State.Loading -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
                         color = MaterialTheme.colorScheme.primary
@@ -94,7 +97,10 @@ fun SavedScreen(
             }
             is SavedContract.State.Error -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }

@@ -19,20 +19,20 @@ class MoviesAndSeriesRepositoryImpl @Inject constructor(
 ) : MoviesAndSeriesRepository {
     private val dao = bookmarkDatabase.bookmarkedMovieDao()
 
-    override fun getTvShows(isMovie: Boolean, query: String, category: String): Flow<PagingData<Item>> {
+    override fun getTvShows(query: String, category: String): Flow<PagingData<Item>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 2, enablePlaceholders = false, prefetchDistance = 20,
             ),
-            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie, query, category) }).flow
+            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie = false, query, category) }).flow
     }
 
-    override fun getMovies(isMovie: Boolean, query: String, category: String): Flow<PagingData<Item>> {
+    override fun getMovies(query: String, category: String): Flow<PagingData<Item>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 2, enablePlaceholders = false, prefetchDistance = 20,
             ),
-            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie, query, category) }).flow
+            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie = true, query, category) }).flow
     }
 
     override suspend fun toggleBookmark(item: Item) {
