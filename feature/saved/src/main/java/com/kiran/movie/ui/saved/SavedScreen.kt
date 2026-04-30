@@ -15,14 +15,17 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +43,9 @@ import androidx.compose.material.icons.filled.Star
 import com.kiran.movie.core.ui.details.ItemDetailsBottomSheet
 import com.kiran.movie.data.models.Item
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavedScreen(
     searchQuery: String,
@@ -52,8 +57,10 @@ fun SavedScreen(
     val state by viewModel.state.collectAsState()
     val isMovieTab by viewModel.isMovieTab.collectAsState()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     var selectedItemForDetails by remember { mutableStateOf<Item?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(searchQuery) {
         viewModel.onEvent(SavedContract.Event.Search(searchQuery))
@@ -193,7 +200,12 @@ fun SavedScreen(
     selectedItemForDetails?.let { item ->
         ItemDetailsBottomSheet(
             item = item,
-            onDismissRequest = { selectedItemForDetails = null }
+            sheetState = sheetState,
+            onDismissRequest = {
+                coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
+                    if (!sheetState.isVisible) selectedItemForDetails = null
+                }
+            }
         )
     }
 }

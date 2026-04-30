@@ -36,6 +36,7 @@ import com.kiran.movie.data.models.ItemDetails
 fun ItemDetailsBottomSheet(
     item: Item,
     onDismissRequest: () -> Unit,
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     viewModel: ItemDetailsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -49,6 +50,7 @@ fun ItemDetailsBottomSheet(
             viewModel.resetState()
             onDismissRequest()
         },
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface
     ) {
         when (val currentState = state) {
