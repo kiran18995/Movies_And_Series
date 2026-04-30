@@ -1,6 +1,16 @@
 package com.kiran.movie.ui.saved
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -29,6 +39,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -115,81 +126,85 @@ fun SavedScreen(
                 LaunchedEffect(currentState.items.size) {
                     onListEmptyStateChange(currentState.items.isEmpty())
                 }
-                
-                if (currentState.items.isEmpty()) {
-                    Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-                        Row(
+
+                // Tab selector (always visible above content)
+                val moviesTabScale by animateFloatAsState(
+                    targetValue = if (isMovieTab) 1.12f else 1f,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+                    label = "moviesTabScale"
+                )
+                val tvTabScale by animateFloatAsState(
+                    targetValue = if (!isMovieTab) 1.12f else 1f,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+                    label = "tvTabScale"
+                )
+
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 15.dp, vertical = 16.dp)
+                            .padding(top = innerPadding.calculateTopPadding())
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.movies),
+                            color = if (isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 15.dp, vertical = 16.dp)
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.movies),
-                                color = if (isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .padding(end = 16.dp)
-                                    .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(true)) }
-                            )
-                            Text(
-                                text = stringResource(id = R.string.tv_shows),
-                                color = if (!isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) }
-                            )
-                        }
-                        EmptyStateScreen(
-                            icon = Icons.Default.Star,
-                            message = if (searchQuery.isNotEmpty()) "No saved items found for '$searchQuery'" else "No bookmarks yet",
-                            modifier = Modifier.weight(1f)
+                                .padding(end = 16.dp)
+                                .scale(moviesTabScale)
+                                .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(true)) }
+                        )
+                        Text(
+                            text = stringResource(id = R.string.tv_shows),
+                            color = if (!isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .scale(tvTabScale)
+                                .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) }
                         )
                     }
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(
-                            top = 16.dp + innerPadding.calculateTopPadding(),
-                            bottom = innerPadding.calculateBottomPadding()
-                        ),
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
-                    ) {
-                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 16.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.movies),
-                                    color = if (isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .padding(end = 16.dp)
-                                        .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(true)) }
-                                )
-                                Text(
-                                    text = stringResource(id = R.string.tv_shows),
-                                    color = if (!isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) }
-                                )
+
+                    // Content slides in from correct direction on tab switch
+                    AnimatedContent(
+                        targetState = isMovieTab,
+                        transitionSpec = {
+                            if (targetState) {
+                                (slideInHorizontally(tween(350)) { -it } + fadeIn(tween(300)))
+                                    .togetherWith(slideOutHorizontally(tween(350)) { it } + fadeOut(tween(200)))
+                            } else {
+                                (slideInHorizontally(tween(350)) { it } + fadeIn(tween(300)))
+                                    .togetherWith(slideOutHorizontally(tween(350)) { -it } + fadeOut(tween(200)))
                             }
-                        }
-                        
-                        items(currentState.items) { item ->
-                            ItemCard(
-                                item = item,
-                                onBookmarkClick = {
-                                    viewModel.onEvent(SavedContract.Event.ToggleBookmark(it))
-                                },
-                                onItemClick = { selectedItemForDetails = it }
+                        },
+                        label = "savedTabContent"
+                    ) { movieTab ->
+                        if (currentState.items.isEmpty()) {
+                            EmptyStateScreen(
+                                icon = Icons.Default.Star,
+                                message = if (searchQuery.isNotEmpty()) "No saved items found for '$searchQuery'" else "No bookmarks yet",
+                                modifier = Modifier.fillMaxSize()
                             )
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                contentPadding = PaddingValues(
+                                    bottom = innerPadding.calculateBottomPadding()
+                                ),
+                                modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
+                            ) {
+                                items(currentState.items) { item ->
+                                    ItemCard(
+                                        item = item,
+                                        onBookmarkClick = {
+                                            viewModel.onEvent(SavedContract.Event.ToggleBookmark(it))
+                                        },
+                                        onItemClick = { selectedItemForDetails = it }
+                                    )
+                                }
+                            }
                         }
                     }
                 }

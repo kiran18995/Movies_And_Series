@@ -1,8 +1,20 @@
 package com.kiran.movie.ui.movies
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +31,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +47,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -182,18 +194,27 @@ fun MoviesScreen(
                             }
                         }
 
-                        // Dynamic header based on selected category
+                        // Dynamic header with animated slide transition on category change
                         item(span = {
                             androidx.compose.foundation.lazy.grid
                                 .GridItemSpan(maxLineSpan)
                         }) {
-                            Text(
-                                text = "${selectedCategory.displayName} Movies",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(bottom = 16.dp),
-                            )
+                            AnimatedContent(
+                                targetState = selectedCategory,
+                                transitionSpec = {
+                                    (slideInVertically(tween(300)) { it } + fadeIn(tween(300)))
+                                        .togetherWith(slideOutVertically(tween(300)) { -it } + fadeOut(tween(200)))
+                                },
+                                label = "categoryHeader",
+                            ) { category ->
+                                Text(
+                                    text = "${category.displayName} Movies",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(bottom = 16.dp),
+                                )
+                            }
                         }
 
                         val itemCount = lazyPagingItems.itemCount
@@ -233,6 +254,17 @@ fun MoviesScreen(
                                         modifier = Modifier.fillMaxWidth().height(200.dp),
                                     ) { i ->
                                         val carouselItem = carouselItemsList[i]
+                                        val carouselInteractionSource = remember { MutableInteractionSource() }
+                                        val isCarouselPressed by carouselInteractionSource.collectIsPressedAsState()
+                                        val carouselItemScale by animateFloatAsState(
+                                            targetValue = if (isCarouselPressed) 0.93f else 1f,
+                                            animationSpec =
+                                                spring(
+                                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                    stiffness = Spring.StiffnessMedium,
+                                                ),
+                                            label = "carouselItemScale",
+                                        )
                                         coil.compose.AsyncImage(
                                             model = "${com.kiran.movie.core.ui.BuildConfig.BASE_IMAGE_URL}${carouselItem.posterPath}",
                                             contentDescription = carouselItem.title,
@@ -240,10 +272,15 @@ fun MoviesScreen(
                                             modifier =
                                                 Modifier
                                                     .fillMaxSize()
+                                                    .scale(carouselItemScale)
                                                     .maskClip(
                                                         androidx.compose.foundation.shape
                                                             .RoundedCornerShape(8.dp),
-                                                    ).clickable { selectedItemForDetails = carouselItem },
+                                                    ).clickable(
+                                                        interactionSource = carouselInteractionSource,
+                                                        indication = null,
+                                                        onClick = { selectedItemForDetails = carouselItem },
+                                                    ),
                                         )
                                     }
                                 }
@@ -316,7 +353,7 @@ fun MoviesScreen(
                 coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                     if (!sheetState.isVisible) selectedItemForDetails = null
                 }
-            }
+            },
         )
     }
 }
