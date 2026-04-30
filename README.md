@@ -19,13 +19,9 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="screenshots/movies_screen.png" width="200" alt="Movies Screen" />
-  &nbsp;&nbsp;
-  <img src="screenshots/tv_shows_screen.png" width="200" alt="TV Shows Screen" />
-  &nbsp;&nbsp;
-  <img src="screenshots/saved_movies_screen.png" width="200" alt="Saved Movies" />
-  &nbsp;&nbsp;
-  <img src="screenshots/saved_tv_shows_screen.png" width="200" alt="Saved TV Shows" />
+  <img width="200" alt="Screenshot_20260501_005629" src="https://github.com/user-attachments/assets/dab8fe8b-d669-4f2b-a829-2ac1714b15a6" />
+<img width="200" alt="Screenshot_20260501_005643" src="https://github.com/user-attachments/assets/94e1e914-29ff-4ee4-8579-e1b2c48e4f9e" />
+<img width="200" alt="Screenshot_20260501_005951" src="https://github.com/user-attachments/assets/df0016c2-4897-46df-97ec-31671ce8fe17" />
 </p>
 
 <p align="center">
