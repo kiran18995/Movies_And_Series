@@ -28,7 +28,6 @@
             android:name="com.kiran.movie.core.ui.webview.MovieWebViewActivity"
             android:exported="false"
             android:hardwareAccelerated="true"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:screenOrientation="user" />
+            android:configChanges="orientation|screenSize|keyboardHidden" />
     </application>
 </manifest>
