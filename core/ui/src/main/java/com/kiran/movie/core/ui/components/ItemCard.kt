@@ -1,5 +1,9 @@
 package com.kiran.movie.core.ui.components
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import com.kiran.movie.core.ui.theme.MovieTheme
+import com.kiran.movie.core.ui.theme.ThemePreviews
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -194,6 +198,40 @@ fun ItemCard(
                     modifier = Modifier.size(20.dp)
                 )
             }
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun ItemCardPreview() {
+    MovieTheme {
+        Surface(
+            modifier = Modifier.padding(16.dp),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            ItemCard(
+                item = com.kiran.movie.data.models.Item(
+                    id = 1,
+                    adult = false,
+                    title = "Sample Movie",
+                    originalTitle = "Sample Movie",
+                    originalLanguage = "en",
+                    posterPath = "/sample.jpg",
+                    backdropPath = null,
+                    voteAverage = 8.5,
+                    voteCount = 100,
+                    popularity = 10.0,
+                    video = false,
+                    overview = "This is a sample movie overview.",
+                    releaseDate = "2024-01-01",
+                    isMovie = true,
+                    isBookmarked = false
+                ),
+                onBookmarkClick = {},
+                onItemClick = {},
+                modifier = Modifier.size(width = 160.dp, height = 280.dp)
+            )
         }
     }
 }

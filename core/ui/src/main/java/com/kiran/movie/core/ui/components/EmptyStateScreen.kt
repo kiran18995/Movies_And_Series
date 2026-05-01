@@ -1,6 +1,11 @@
 package com.kiran.movie.core.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Surface
+import com.kiran.movie.core.ui.theme.MovieTheme
+import com.kiran.movie.core.ui.theme.ThemePreviews
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,5 +51,18 @@ fun EmptyStateScreen(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             textAlign = TextAlign.Center
         )
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun EmptyStateScreenPreview() {
+    MovieTheme {
+        Surface {
+            EmptyStateScreen(
+                icon = Icons.Default.Warning,
+                message = "No items found. Try again later."
+            )
+        }
     }
 }

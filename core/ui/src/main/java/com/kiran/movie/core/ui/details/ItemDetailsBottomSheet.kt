@@ -1,5 +1,8 @@
 package com.kiran.movie.core.ui.details
 
+import androidx.compose.material3.Surface
+import com.kiran.movie.core.ui.theme.MovieTheme
+import com.kiran.movie.core.ui.theme.ThemePreviews
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
@@ -624,6 +627,16 @@ private fun ImdbRatingBadge(rating: Double) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun ImdbRatingBadgePreview() {
+    MovieTheme {
+        Surface(modifier = Modifier.padding(16.dp)) {
+            ImdbRatingBadge(rating = 8.5)
         }
     }
 }
