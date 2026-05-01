@@ -19,11 +19,22 @@ data class ItemDetails(
     val credits: Credits?,
     val videos: Videos?,
     @SerializedName("imdb_id") val imdbId: String?,
-    @SerializedName("external_ids") val externalIds: ExternalIds?
+    @SerializedName("external_ids") val externalIds: ExternalIds?,
+    val seasons: List<SeasonInfo>?
 )
 
 data class ExternalIds(
     @SerializedName("imdb_id") val imdbId: String?
+)
+
+/**
+ * Per-season metadata returned in the TV details `seasons` array.
+ * season_number 0 = Specials — excluded from picker.
+ */
+data class SeasonInfo(
+    @SerializedName("season_number") val seasonNumber: Int,
+    @SerializedName("episode_count") val episodeCount: Int,
+    val name: String?
 )
 
 data class Genre(

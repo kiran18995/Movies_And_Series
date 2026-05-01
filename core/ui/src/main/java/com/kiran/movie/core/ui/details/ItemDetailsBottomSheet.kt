@@ -31,11 +31,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -59,6 +59,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.foundation.Canvas
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -235,52 +238,79 @@ private fun DetailsContent(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(4.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Rating",
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(16.dp),
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = String.format("%.1f", details.voteAverage),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    ImdbRatingBadge(rating = details.voteAverage)
                 }
             }
+        }
 
-            // Play FAB — launches full-screen WebView Activity
-            FloatingActionButton(
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // ── Play Now + Watch Trailer side by side ─────────────────────────────
+        val trailer = details.videos?.results?.firstOrNull {
+            it.type == "Trailer" && it.site == "YouTube"
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            // Play Now
+            Button(
                 onClick = {
                     if (item.isMovie) {
-                        // Movie: launch directly
                         val intent = Intent(context, MovieWebViewActivity::class.java).apply {
                             putExtra(MovieWebViewActivity.EXTRA_URL, watchUrl)
                             putExtra(MovieWebViewActivity.EXTRA_TITLE, details.title ?: "Watch")
                         }
                         context.startActivity(intent)
                     } else {
-                        // TV show: pick season/episode first
                         showEpisodeSelector = true
                     }
                 },
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp)
-                    .offset(y = 28.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
+                    .weight(1f)
+                    .height(52.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Play",
-                    tint = MaterialTheme.colorScheme.onPrimary,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
                 )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Play Now",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
+
+            // Watch Trailer (only shown if trailer exists)
+            if (trailer != null) {
+                OutlinedButton(
+                    onClick = {
+                        context.startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                "https://www.youtube.com/watch?v=${trailer.key}".toUri(),
+                            ),
+                        )
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Trailer",
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
             }
         }
 
@@ -332,25 +362,6 @@ private fun DetailsContent(
 
         // ── Trailer + Overview + Cast ─────────────────────────────────────────
         Column(modifier = Modifier.padding(16.dp)) {
-            val trailer = details.videos?.results?.firstOrNull {
-                it.type == "Trailer" && it.site == "YouTube"
-            }
-            if (trailer != null) {
-                Button(
-                    onClick = {
-                        context.startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                "https://www.youtube.com/watch?v=${trailer.key}".toUri(),
-                            ),
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text("Watch Trailer")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
 
             Text(
                 text = "Overview",
@@ -408,7 +419,11 @@ private fun DetailsContent(
     // Season/Episode picker for TV shows
     if (showEpisodeSelector) {
         EpisodeSelectorDialog(
-            numberOfSeasons = details.numberOfSeasons ?: 1,
+            seasons = details.seasons
+                ?.filter { it.seasonNumber > 0 }  // exclude Specials (season 0)
+                ?.sortedBy { it.seasonNumber }
+                ?.ifEmpty { null },
+            fallbackSeasonCount = details.numberOfSeasons ?: 1,
             tmdbId = item.id,
             title = details.title,
             onDismiss = { showEpisodeSelector = false },
@@ -422,61 +437,76 @@ private fun DetailsContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EpisodeSelectorDialog(
-    numberOfSeasons: Int,
+    seasons: List<com.kiran.movie.data.models.SeasonInfo>?,  // null = fallback
+    fallbackSeasonCount: Int,
     tmdbId: Int,
     title: String?,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    var selectedSeason by remember { mutableIntStateOf(1) }
+
+    // Build a season list: prefer real API data, fall back to a numbered list
+    val seasonList = seasons
+        ?: List(fallbackSeasonCount) { i ->
+            com.kiran.movie.data.models.SeasonInfo(
+                seasonNumber = i + 1,
+                episodeCount = 20,  // conservative fallback
+                name = "Season ${i + 1}"
+            )
+        }
+
+    var selectedSeason by remember { mutableIntStateOf(seasonList.first().seasonNumber) }
     var selectedEpisode by remember { mutableIntStateOf(1) }
+
+    // Episode count for the currently selected season
+    val episodeCount = seasonList
+        .firstOrNull { it.seasonNumber == selectedSeason }
+        ?.episodeCount
+        ?.coerceAtLeast(1)
+        ?: 1
+
+    // Reset episode to 1 whenever season changes
+    LaunchedEffect(selectedSeason) { selectedEpisode = 1 }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Select Season & Episode") },
         text = {
             Column {
-                // ── Season picker ─────────────────────────────────────────────
+                // ── Season picker ────────────────────────────────────────────
                 Text(
                     text = "Season",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    items(numberOfSeasons) { index ->
-                        val season = index + 1
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(seasonList.size) { index ->
+                        val s = seasonList[index]
                         FilterChip(
-                            selected = selectedSeason == season,
-                            onClick = {
-                                selectedSeason = season
-                                selectedEpisode = 1  // reset episode on season change
-                            },
-                            label = { Text("S$season") },
+                            selected = selectedSeason == s.seasonNumber,
+                            onClick = { selectedSeason = s.seasonNumber },
+                            label = { Text("S${s.seasonNumber}") },
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ── Episode picker ────────────────────────────────────────────
+                // ── Episode picker (exact count from API) ──────────────────────
                 Text(
-                    text = "Episode",
+                    text = "Episode  ($episodeCount total)",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    items(50) { index ->
-                        val episode = index + 1
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(episodeCount) { index ->
+                        val ep = index + 1
                         FilterChip(
-                            selected = selectedEpisode == episode,
-                            onClick = { selectedEpisode = episode },
-                            label = { Text("$episode") },
+                            selected = selectedEpisode == ep,
+                            onClick = { selectedEpisode = ep },
+                            label = { Text("$ep") },
                         )
                     }
                 }
@@ -512,4 +542,88 @@ private fun EpisodeSelectorDialog(
             }
         },
     )
+}
+
+// ---------------------------------------------------------------------------
+// IMDb Rating Badge — logo pill + score + arc indicator
+// ---------------------------------------------------------------------------
+@Composable
+private fun ImdbRatingBadge(rating: Double) {
+    val imdbYellow = Color(0xFFF5C518)
+    val trackColor = imdbYellow.copy(alpha = 0.20f)
+    val fraction = (rating / 10f).coerceIn(0.0, 1.0)
+    val arcColor = when {
+        rating >= 7.5 -> Color(0xFF4CAF50)   // green — great
+        rating >= 6.0 -> Color(0xFFFFC107)   // amber — good
+        else          -> Color(0xFFF44336)   // red   — poor
+    }
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        // IMDb logo pill
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .background(imdbYellow, RoundedCornerShape(4.dp))
+                .padding(horizontal = 5.dp, vertical = 2.dp),
+        ) {
+            Text(
+                text = "IMDb",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.5.sp,
+                ),
+                color = Color.Black,
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Arc indicator + rating number stacked
+        Box(contentAlignment = Alignment.Center) {
+            Canvas(modifier = Modifier.size(44.dp)) {
+                val strokeWidth = 5.dp.toPx()
+                val inset = strokeWidth / 2f
+                val arcRect = androidx.compose.ui.geometry.Rect(
+                    left = inset, top = inset,
+                    right = size.width - inset, bottom = size.height - inset,
+                )
+                // Background track
+                drawArc(
+                    color = trackColor,
+                    startAngle = 135f,
+                    sweepAngle = 270f,
+                    useCenter = false,
+                    topLeft = arcRect.topLeft,
+                    size = arcRect.size,
+                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                )
+                // Filled arc
+                drawArc(
+                    color = arcColor,
+                    startAngle = 135f,
+                    sweepAngle = (270f * fraction).toFloat(),
+                    useCenter = false,
+                    topLeft = arcRect.topLeft,
+                    size = arcRect.size,
+                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                )
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = String.format("%.1f", rating),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "/10",
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
 }
