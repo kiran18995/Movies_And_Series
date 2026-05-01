@@ -44,6 +44,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -171,7 +172,7 @@ fun MoviesScreen(
                         modifier = Modifier.padding(innerPadding),
                     )
                 } else {
-                    androidx.compose.runtime.key(selectedLanguage, selectedSortOrder) {
+                    key(selectedLanguage, selectedSortOrder) {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             contentPadding =
@@ -273,67 +274,69 @@ fun MoviesScreen(
                                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                             modifier = Modifier.padding(bottom = 8.dp),
                                         )
-                                        val carouselState =
-                                            androidx.compose.material3.carousel
-                                                .rememberCarouselState { carouselItemsList.size }
-                                        androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel(
-                                            state = carouselState,
-                                            preferredItemWidth = 180.dp,
-                                            itemSpacing = 12.dp,
-                                            modifier = Modifier.fillMaxWidth().height(300.dp),
-                                        ) { i ->
-                                            val carouselItem = carouselItemsList[i]
-                                            val isBookmarked = bookmarkedIds.contains(carouselItem.id)
-                                            val carouselInteractionSource = remember(carouselItem.id) { MutableInteractionSource() }
-                                            val isCarouselPressed by carouselInteractionSource.collectIsPressedAsState()
-                                            val carouselItemScale by animateFloatAsState(
-                                                targetValue = if (isCarouselPressed) 0.93f else 1f,
-                                                animationSpec =
-                                                    spring(
-                                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                        stiffness = Spring.StiffnessMedium,
-                                                    ),
-                                                label = "carouselItemScale",
-                                            )
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .scale(carouselItemScale)
-                                                    .maskClip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
-                                                    .clickable(
-                                                        interactionSource = carouselInteractionSource,
-                                                        indication = null,
-                                                        onClick = { selectedItemForDetails = carouselItem },
-                                                    )
-                                            ) {
-                                                coil.compose.AsyncImage(
-                                                    model = "${com.kiran.movie.core.ui.BuildConfig.BASE_IMAGE_URL}${carouselItem.posterPath}",
-                                                    contentDescription = carouselItem.title,
-                                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                                    modifier = Modifier.fillMaxSize()
-                                                )
-
-                                                IconButton(
-                                                    onClick = {
-                                                        viewModel.onEvent(MoviesContract.Event.ToggleBookmark(carouselItem))
-                                                    },
-                                                    modifier = Modifier
-                                                        .align(Alignment.TopEnd)
-                                                        .padding(12.dp)
-                                                        .background(
-                                                            color = Color.Black.copy(alpha = 0.35f),
-                                                            shape = CircleShape
-                                                        )
-                                                        .size(36.dp)
-                                                ) {
-                                                    androidx.compose.material3.Icon(
-                                                        painter = painterResource(
-                                                            id = if (isBookmarked) R.drawable.ic_bookmarked else R.drawable.ic_un_bookmarked
+                                        key(carouselItemsList) {
+                                            val carouselState =
+                                                androidx.compose.material3.carousel
+                                                    .rememberCarouselState { carouselItemsList.size }
+                                            androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel(
+                                                state = carouselState,
+                                                preferredItemWidth = 180.dp,
+                                                itemSpacing = 12.dp,
+                                                modifier = Modifier.fillMaxWidth().height(300.dp),
+                                            ) { i ->
+                                                val carouselItem = carouselItemsList.getOrNull(i) ?: return@HorizontalMultiBrowseCarousel
+                                                val isBookmarked = bookmarkedIds.contains(carouselItem.id)
+                                                val carouselInteractionSource = remember(carouselItem.id) { MutableInteractionSource() }
+                                                val isCarouselPressed by carouselInteractionSource.collectIsPressedAsState()
+                                                val carouselItemScale by animateFloatAsState(
+                                                    targetValue = if (isCarouselPressed) 0.93f else 1f,
+                                                    animationSpec =
+                                                        spring(
+                                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                            stiffness = Spring.StiffnessMedium,
                                                         ),
-                                                        contentDescription = "Bookmark",
-                                                        tint = if (isBookmarked) Color(0xFFFFC107) else Color.White,
-                                                        modifier = Modifier.size(22.dp)
+                                                    label = "carouselItemScale",
+                                                )
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .scale(carouselItemScale)
+                                                        .maskClip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                                                        .clickable(
+                                                            interactionSource = carouselInteractionSource,
+                                                            indication = null,
+                                                            onClick = { selectedItemForDetails = carouselItem },
+                                                        )
+                                                ) {
+                                                    coil.compose.AsyncImage(
+                                                        model = "${com.kiran.movie.core.ui.BuildConfig.BASE_IMAGE_URL}${carouselItem.posterPath}",
+                                                        contentDescription = carouselItem.title,
+                                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                                        modifier = Modifier.fillMaxSize()
                                                     )
+
+                                                    IconButton(
+                                                        onClick = {
+                                                            viewModel.onEvent(MoviesContract.Event.ToggleBookmark(carouselItem))
+                                                        },
+                                                        modifier = Modifier
+                                                            .align(Alignment.TopEnd)
+                                                            .padding(12.dp)
+                                                            .background(
+                                                                color = Color.Black.copy(alpha = 0.35f),
+                                                                shape = CircleShape
+                                                            )
+                                                            .size(36.dp)
+                                                    ) {
+                                                        androidx.compose.material3.Icon(
+                                                            painter = painterResource(
+                                                                id = if (isBookmarked) R.drawable.ic_bookmarked else R.drawable.ic_un_bookmarked
+                                                            ),
+                                                            contentDescription = "Bookmark",
+                                                            tint = if (isBookmarked) Color(0xFFFFC107) else Color.White,
+                                                            modifier = Modifier.size(22.dp)
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
