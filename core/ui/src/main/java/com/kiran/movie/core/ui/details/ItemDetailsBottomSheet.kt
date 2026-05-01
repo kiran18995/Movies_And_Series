@@ -1,9 +1,19 @@
 package com.kiran.movie.core.ui.details
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -13,8 +23,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kiran.movie.core.ui.BuildConfig
@@ -75,13 +98,17 @@ fun ItemDetailsBottomSheet(
 }
 
 @Composable
-private fun DetailsContent(details: ItemDetails, item: Item) {
+private fun DetailsContent(
+    details: ItemDetails,
+    item: Item,
+) {
     val context = LocalContext.current
-    val watchUrl = if (item.isMovie) {
-        "https://streamimdb.ru/embed/movie/${item.id}"
-    } else {
-        "https://streamimdb.ru/embed/tv/${item.id}"
-    }
+    val watchUrl =
+        if (item.isMovie) {
+            "https://streamimdb.ru/embed/movie/${item.id}"
+        } else {
+            "https://streamimdb.ru/embed/tv/${item.id}"
+        }
 
     Column(
         modifier =
@@ -169,13 +196,14 @@ private fun DetailsContent(details: ItemDetails, item: Item) {
             FloatingActionButton(
                 onClick = {
                     context.startActivity(
-                        Intent(Intent.ACTION_VIEW, Uri.parse(watchUrl))
+                        Intent(Intent.ACTION_VIEW, watchUrl.toUri()),
                     )
                 },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp)
-                    .offset(y = 28.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp)
+                        .offset(y = 28.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
             ) {
                 Icon(
@@ -240,7 +268,11 @@ private fun DetailsContent(details: ItemDetails, item: Item) {
             if (trailer != null) {
                 Button(
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=${trailer.key}"))
+                        val intent =
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                "https://www.youtube.com/watch?v=${trailer.key}".toUri(),
+                            )
                         context.startActivity(intent)
                     },
                     modifier = Modifier.fillMaxWidth(),
