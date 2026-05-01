@@ -15,3 +15,8 @@ build/
 local.properties
 /.kotlin/sessions/
 /.idea/other.xml
+/app/release/baselineProfiles/0/app-release.dm
+/app/release/baselineProfiles/1/app-release.dm
+/domain/src/main/java/com/kiran/movie/domain/usecase/GetUpcomingMoviesUseCase.kt
+/app/kiranmovie.jks
+/app/release/output-metadata.json
