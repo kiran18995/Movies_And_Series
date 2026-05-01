@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetMoviesUseCase @Inject constructor(
     private val repository: MoviesAndSeriesRepository
 ) {
-    operator fun invoke(query: String, category: String = "popular"): Flow<PagingData<Item>> {
-        return repository.getMovies(query, category)
+    operator fun invoke(query: String, language: String? = null, sortBy: String = "popularity.desc"): Flow<PagingData<Item>> {
+        return repository.getMovies(query, language, sortBy)
     }
 }

@@ -4,11 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
 import androidx.paging.cachedIn
-import com.kiran.movie.core.ui.models.MovieCategory
+import com.kiran.movie.core.ui.models.MovieLanguage
+import com.kiran.movie.core.ui.models.MovieSortOrder
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
-import com.kiran.movie.domain.usecase.GetMoviesListUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
+import com.kiran.movie.domain.usecase.GetUpcomingMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -30,7 +31,7 @@ class MoviesViewModel @Inject constructor(
     private val getMoviesUseCase: GetMoviesUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
     private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase,
-    private val getMoviesListUseCase: GetMoviesListUseCase
+    private val getUpcomingMoviesUseCase: GetUpcomingMoviesUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MoviesContract.State>(MoviesContract.State.Loading)
@@ -44,14 +45,17 @@ class MoviesViewModel @Inject constructor(
     private val _bookmarkedIds = MutableStateFlow<Set<Int>>(emptySet())
     val bookmarkedIds: StateFlow<Set<Int>> = _bookmarkedIds.asStateFlow()
 
-    private val _selectedCategory = MutableStateFlow(MovieCategory.POPULAR)
-    val selectedCategory: StateFlow<MovieCategory> = _selectedCategory.asStateFlow()
+    private val _selectedLanguage = MutableStateFlow(MovieLanguage.ENGLISH)
+    val selectedLanguage: StateFlow<MovieLanguage> = _selectedLanguage.asStateFlow()
+
+    private val _selectedSortOrder = MutableStateFlow(MovieSortOrder.POPULAR)
+    val selectedSortOrder: StateFlow<MovieSortOrder> = _selectedSortOrder.asStateFlow()
 
     private val _carouselItems = MutableStateFlow<List<Item>>(emptyList())
     val carouselItems: StateFlow<List<Item>> = _carouselItems.asStateFlow()
 
     init {
-        fetchCarouselItems()
+        fetchCarouselItems(_selectedLanguage.value.code)
         viewModelScope.launch {
             searchQueryFlow
                 .debounce(300L)
@@ -63,10 +67,10 @@ class MoviesViewModel @Inject constructor(
         }
     }
 
-    private fun fetchCarouselItems() {
+    private fun fetchCarouselItems(language: String?) {
         viewModelScope.launch {
             try {
-                val items = getMoviesListUseCase("upcoming", 1)
+                val items = getUpcomingMoviesUseCase(language, 1)
                 _carouselItems.value = items
             } catch (e: CancellationException) {
                 throw e // Preserve structured concurrency (issue #11)
@@ -84,10 +88,20 @@ class MoviesViewModel @Inject constructor(
             is MoviesContract.Event.Search -> {
                 searchQueryFlow.value = event.query
             }
-            is MoviesContract.Event.SelectCategory -> {
-                if (_selectedCategory.value != event.category) {
-                    _selectedCategory.value = event.category
-                    // Emit the current query again to re-trigger collectLatest with new category
+            is MoviesContract.Event.SelectLanguage -> {
+                if (_selectedLanguage.value != event.language) {
+                    _selectedLanguage.value = event.language
+                    fetchCarouselItems(event.language.code)
+                    // Emit the current query again to re-trigger collectLatest with new language
+                    searchQueryFlow.value = searchQueryFlow.value
+                    // Force a re-fetch immediately since value hasn't changed (distinctUntilChanged would skip)
+                    viewModelScope.launch { fetchMovies(searchQueryFlow.value) }
+                }
+            }
+            is MoviesContract.Event.SelectSortOrder -> {
+                if (_selectedSortOrder.value != event.sortOrder) {
+                    _selectedSortOrder.value = event.sortOrder
+                    // Emit the current query again to re-trigger collectLatest with new sort order
                     searchQueryFlow.value = searchQueryFlow.value
                     // Force a re-fetch immediately since value hasn't changed (distinctUntilChanged would skip)
                     viewModelScope.launch { fetchMovies(searchQueryFlow.value) }
@@ -112,7 +126,7 @@ class MoviesViewModel @Inject constructor(
     private suspend fun fetchMovies(query: String) {
         try {
             _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
-            val flow = getMoviesUseCase(query, _selectedCategory.value.endpoint) // issue #5: no isMovie
+            val flow = getMoviesUseCase(query, _selectedLanguage.value.code, _selectedSortOrder.value.value) // issue #5: no isMovie
                 .cachedIn(viewModelScope)
             _state.value = MoviesContract.State.Success(flow)
         } catch (e: CancellationException) {

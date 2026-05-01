@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 import androidx.room.withTransaction
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class MoviesAndSeriesRepositoryImpl @Inject constructor(
     private val moviesAndSeriesApi: MoviesAndSeriesApi,
@@ -27,12 +29,12 @@ class MoviesAndSeriesRepositoryImpl @Inject constructor(
             pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie = false, query, category) }).flow
     }
 
-    override fun getMovies(query: String, category: String): Flow<PagingData<Item>> {
+    override fun getMovies(query: String, language: String?, sortBy: String): Flow<PagingData<Item>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 2, enablePlaceholders = false, prefetchDistance = 20,
             ),
-            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie = true, query, category) }).flow
+            pagingSourceFactory = { MoviesAndSeriesDataSource(moviesAndSeriesApi, isMovie = true, query, language = language, sortBy = sortBy) }).flow
     }
 
     override suspend fun toggleBookmark(item: Item) {
@@ -64,6 +66,15 @@ class MoviesAndSeriesRepositoryImpl @Inject constructor(
 
     override suspend fun getTvShowDetails(seriesId: Int): ItemDetails {
         return moviesAndSeriesApi.getTvShowDetails(seriesId)
+    }
+
+    override suspend fun getUpcomingMoviesByLanguage(language: String?, page: Int): List<Item> {
+        return try {
+            val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+            moviesAndSeriesApi.getUpcomingMoviesByLanguage(language, today, page).results.map { it.apply { isMovie = true } }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     override suspend fun getMoviesList(category: String, page: Int): List<Item> {

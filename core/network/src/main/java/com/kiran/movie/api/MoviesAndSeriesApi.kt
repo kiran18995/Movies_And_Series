@@ -32,6 +32,23 @@ interface MoviesAndSeriesApi {
     ): ItemResponse
 
     /**
+     * Discover movies by language and sort order.
+     */
+    @GET("discover/movie?language=en-US")
+    suspend fun discoverMovies(
+        @Query("with_original_language") language: String?,
+        @Query("sort_by") sortBy: String,
+        @Query("page") page: Int
+    ): ItemResponse
+
+    @GET("discover/movie?language=en-US&sort_by=primary_release_date.asc")
+    suspend fun getUpcomingMoviesByLanguage(
+        @Query("with_original_language") language: String?,
+        @Query("primary_release_date.gte") releaseDateGte: String,
+        @Query("page") page: Int
+    ): ItemResponse
+
+    /**
      * Fetch TV shows by category (popular, top_rated, airing_today, on_the_air).
      */
     @GET("tv/{category}?language=en-US")

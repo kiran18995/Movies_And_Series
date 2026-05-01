@@ -9,7 +9,9 @@ class MoviesAndSeriesDataSource(
     private val moviesAndSeriesApi: MoviesAndSeriesApi,
     private val isMovie: Boolean,
     private val query: String,
-    private val category: String = "popular"
+    private val category: String = "popular",
+    private val language: String? = null,
+    private val sortBy: String = "popularity.desc"
 ) : PagingSource<Int, Item>() {
 
     companion object {
@@ -31,7 +33,7 @@ class MoviesAndSeriesDataSource(
                 }
             } else {
                 if (isMovie) {
-                    moviesAndSeriesApi.getMoviesByCategory(category, position)
+                    moviesAndSeriesApi.discoverMovies(language, sortBy, position)
                 } else {
                     moviesAndSeriesApi.getTvShowsByCategory(category, position)
                 }

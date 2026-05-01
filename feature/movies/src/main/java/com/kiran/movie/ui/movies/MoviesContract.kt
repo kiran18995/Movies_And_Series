@@ -2,7 +2,8 @@ package com.kiran.movie.ui.movies
 
 import androidx.paging.PagingData
 import com.kiran.movie.data.models.Item
-import com.kiran.movie.core.ui.models.MovieCategory
+import com.kiran.movie.core.ui.models.MovieLanguage
+import com.kiran.movie.core.ui.models.MovieSortOrder
 import kotlinx.coroutines.flow.Flow
 
 class MoviesContract {
@@ -11,7 +12,8 @@ class MoviesContract {
         object RefreshBookmarks : Event()
         data class ToggleBookmark(val item: Item) : Event()
         data class Search(val query: String) : Event()
-        data class SelectCategory(val category: MovieCategory) : Event()
+        data class SelectLanguage(val language: MovieLanguage) : Event()
+        data class SelectSortOrder(val sortOrder: MovieSortOrder) : Event()
     }
 
     sealed class State {
