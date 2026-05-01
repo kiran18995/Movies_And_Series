@@ -178,9 +178,9 @@ private fun DetailsContent(
 ) {
     val context = LocalContext.current
     val watchUrl = if (item.isMovie) {
-        "https://vidsrc.to/embed/movie/${item.id}"
+        "https://streamimdb.ru/embed/movie/${item.id}"
     } else {
-        "https://vidsrc.to/embed/tv/${item.id}"
+        "https://streamimdb.ru/embed/tv/${item.id}"
     }
 
     var showEpisodeSelector by remember { mutableStateOf(false) }
@@ -518,7 +518,7 @@ private fun EpisodeSelectorDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val url = "https://vidsrc.to/embed/tv/$tmdbId/$selectedSeason/$selectedEpisode"
+                    val url = "https://streamimdb.ru/embed/tv/$tmdbId/$selectedSeason/$selectedEpisode"
                     val intent = Intent(context, MovieWebViewActivity::class.java).apply {
                         putExtra(MovieWebViewActivity.EXTRA_URL, url)
                         putExtra(
