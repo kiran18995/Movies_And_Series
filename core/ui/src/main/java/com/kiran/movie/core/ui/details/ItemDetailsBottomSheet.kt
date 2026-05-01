@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,7 +38,7 @@ fun ItemDetailsBottomSheet(
     item: Item,
     onDismissRequest: () -> Unit,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    viewModel: ItemDetailsViewModel = hiltViewModel()
+    viewModel: ItemDetailsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -51,7 +52,7 @@ fun ItemDetailsBottomSheet(
             onDismissRequest()
         },
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = MaterialTheme.colorScheme.surface,
     ) {
         when (val currentState = state) {
             is DetailsState.Loading -> {
@@ -59,91 +60,129 @@ fun ItemDetailsBottomSheet(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
+
             is DetailsState.Error -> {
                 Box(modifier = Modifier.fillMaxWidth().height(300.dp), contentAlignment = Alignment.Center) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }
+
             is DetailsState.Success -> {
-                DetailsContent(details = currentState.details)
+                DetailsContent(details = currentState.details, item = item)
             }
         }
     }
 }
 
 @Composable
-private fun DetailsContent(details: ItemDetails) {
+private fun DetailsContent(details: ItemDetails, item: Item) {
     val context = LocalContext.current
+    val watchUrl = if (item.isMovie) {
+        "https://streamimdb.ru/embed/movie/${item.id}"
+    } else {
+        "https://streamimdb.ru/embed/tv/${item.id}"
+    }
+
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
         ) {
             AsyncImage(
                 model = "${BuildConfig.BASE_IMAGE_URL}${details.backdropPath ?: details.posterPath}",
                 contentDescription = "Backdrop",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, MaterialTheme.colorScheme.surface),
-                            startY = 100f
-                        )
-                    )
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, MaterialTheme.colorScheme.surface),
+                                startY = 100f,
+                            ),
+                        ),
             )
             Row(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = 16.dp)
-                    .offset(y = 20.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(horizontal = 16.dp)
+                        .offset(y = 20.dp),
             ) {
                 AsyncImage(
                     model = "${BuildConfig.BASE_IMAGE_URL}${details.posterPath}",
                     contentDescription = "Poster",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .width(100.dp)
-                        .height(150.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                    modifier =
+                        Modifier
+                            .width(100.dp)
+                            .height(150.dp)
+                            .clip(RoundedCornerShape(8.dp)),
                 )
                 Column(
-                    modifier = Modifier
-                        .padding(start = 16.dp)
-                        .align(Alignment.Bottom)
+                    modifier =
+                        Modifier
+                            .padding(start = 16.dp)
+                            .align(Alignment.Bottom),
                 ) {
                     Text(
                         text = details.title ?: "Unknown",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
-                        ),
+                        style =
+                            MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                            ),
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(4.dp),
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = "Rating",
                             tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = String.format("%.1f", details.voteAverage),
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                     }
                 }
+            }
+
+            // Play FAB
+            FloatingActionButton(
+                onClick = {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(watchUrl))
+                    )
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp)
+                    .offset(y = 28.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Play",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                )
             }
         }
 
@@ -154,7 +193,7 @@ private fun DetailsContent(details: ItemDetails) {
                 Text(
                     text = "\"${details.tagline}\"",
                     style = MaterialTheme.typography.bodyMedium.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -181,7 +220,7 @@ private fun DetailsContent(details: ItemDetails) {
                 Text(
                     text = metadata.joinToString(" • "),
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -191,7 +230,7 @@ private fun DetailsContent(details: ItemDetails) {
                 Text(
                     text = genres.joinToString { it.name },
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -204,7 +243,7 @@ private fun DetailsContent(details: ItemDetails) {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=${trailer.key}"))
                         context.startActivity(intent)
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("Watch Trailer")
                 }
@@ -214,13 +253,13 @@ private fun DetailsContent(details: ItemDetails) {
             Text(
                 text = "Overview",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = details.overview ?: "No overview available.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             if (!details.credits?.cast.isNullOrEmpty()) {
@@ -228,23 +267,24 @@ private fun DetailsContent(details: ItemDetails) {
                 Text(
                     text = "Cast",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(details.credits!!.cast!!.take(10)) { cast ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.width(80.dp)
+                            modifier = Modifier.width(80.dp),
                         ) {
                             AsyncImage(
                                 model = if (cast.profilePath != null) "${BuildConfig.BASE_IMAGE_URL}${cast.profilePath}" else null,
                                 contentDescription = cast.name,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Gray)
+                                modifier =
+                                    Modifier
+                                        .size(60.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Gray),
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -252,7 +292,7 @@ private fun DetailsContent(details: ItemDetails) {
                                 style = MaterialTheme.typography.bodySmall,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             )
                         }
                     }

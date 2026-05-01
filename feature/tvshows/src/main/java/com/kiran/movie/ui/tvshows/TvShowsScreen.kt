@@ -12,22 +12,24 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -48,21 +50,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.kiran.movie.core.ui.components.EmptyStateScreen
 import com.kiran.movie.core.ui.components.ItemCard
-import com.kiran.movie.core.ui.models.TvCategory
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import com.kiran.movie.core.ui.details.ItemDetailsBottomSheet
+import com.kiran.movie.core.ui.models.TvCategory
 import com.kiran.movie.data.models.Item
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.launch
@@ -73,7 +73,7 @@ fun TvShowsScreen(
     searchQuery: String,
     onListEmptyStateChange: (Boolean) -> Unit,
     innerPadding: PaddingValues,
-    viewModel: TvShowsViewModel = hiltViewModel()
+    viewModel: TvShowsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val bookmarkedIds by viewModel.bookmarkedIds.collectAsState()
@@ -101,11 +101,12 @@ fun TvShowsScreen(
     }
 
     DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.onEvent(TvShowsContract.Event.RefreshBookmarks)
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    viewModel.onEvent(TvShowsContract.Event.RefreshBookmarks)
+                }
             }
-        }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
@@ -113,61 +114,69 @@ fun TvShowsScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
     ) {
         when (val currentState = state) {
             is TvShowsContract.State.Loading -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
                 Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
+
             is TvShowsContract.State.Error -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
                 Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }
+
             is TvShowsContract.State.Success -> {
                 val lazyPagingItems = currentState.pagingDataFlow.collectAsLazyPagingItems()
-                
+
                 LaunchedEffect(lazyPagingItems.itemCount) {
                     onListEmptyStateChange(lazyPagingItems.itemCount == 0)
                 }
-                
+
                 if (lazyPagingItems.itemCount == 0 && lazyPagingItems.loadState.refresh !is LoadState.Loading) {
                     EmptyStateScreen(
                         icon = Icons.Default.Search,
                         message = if (searchQuery.isNotEmpty()) "No TV shows found for '$searchQuery'" else "No TV shows found",
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
                     )
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(
-                            top = 8.dp + innerPadding.calculateTopPadding(),
-                            bottom = innerPadding.calculateBottomPadding()
-                        ),
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
+                        contentPadding =
+                            PaddingValues(
+                                top = 8.dp + innerPadding.calculateTopPadding(),
+                                bottom = innerPadding.calculateBottomPadding(),
+                            ),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp),
                     ) {
                         // Category filter chips
-                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                        item(span = {
+                            androidx.compose.foundation.lazy.grid
+                                .GridItemSpan(maxLineSpan)
+                        }) {
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp)
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 12.dp),
                             ) {
                                 items(TvCategory.entries.toList()) { category ->
                                     FilterChip(
@@ -176,35 +185,39 @@ fun TvShowsScreen(
                                             viewModel.onEvent(TvShowsContract.Event.SelectCategory(category))
                                         },
                                         label = { Text(category.displayName) },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                                        )
+                                        colors =
+                                            FilterChipDefaults.filterChipColors(
+                                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                            ),
                                     )
                                 }
                             }
                         }
 
                         // Dynamic header with animated slide transition on category change
-                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                        item(span = {
+                            androidx.compose.foundation.lazy.grid
+                                .GridItemSpan(maxLineSpan)
+                        }) {
                             AnimatedContent(
                                 targetState = selectedCategory,
                                 transitionSpec = {
                                     (slideInVertically(tween(300)) { it } + fadeIn(tween(300)))
                                         .togetherWith(slideOutVertically(tween(300)) { -it } + fadeOut(tween(200)))
                                 },
-                                label = "tvCategoryHeader"
+                                label = "tvCategoryHeader",
                             ) { category ->
                                 Text(
                                     text = "${category.displayName} TV Shows",
                                     color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(bottom = 16.dp)
+                                    modifier = Modifier.padding(bottom = 16.dp),
                                 )
                             }
                         }
-                        
+
                         val itemCount = lazyPagingItems.itemCount
 
                         items(minOf(2, itemCount)) { index ->
@@ -216,50 +229,59 @@ fun TvShowsScreen(
                                     onBookmarkClick = {
                                         viewModel.onEvent(TvShowsContract.Event.ToggleBookmark(it))
                                     },
-                                    onItemClick = { selectedItemForDetails = it }
+                                    onItemClick = { selectedItemForDetails = it },
                                 )
                             }
                         }
 
                         if (itemCount >= 2 && carouselItemsList.isNotEmpty()) {
-                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                            item(span = {
+                                androidx.compose.foundation.lazy.grid
+                                    .GridItemSpan(maxLineSpan)
+                            }) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
                                     Text(
                                         text = "Airing Today",
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                        modifier = Modifier.padding(bottom = 8.dp)
+                                        modifier = Modifier.padding(bottom = 8.dp),
                                     )
-                                    val carouselState = androidx.compose.material3.carousel.rememberCarouselState { carouselItemsList.size }
+                                    val carouselState =
+                                        androidx.compose.material3.carousel
+                                            .rememberCarouselState { carouselItemsList.size }
                                     androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel(
                                         state = carouselState,
                                         preferredItemWidth = 140.dp,
                                         itemSpacing = 8.dp,
-                                        modifier = Modifier.fillMaxWidth().height(200.dp)
+                                        modifier = Modifier.fillMaxWidth().height(200.dp),
                                     ) { i ->
                                         val carouselItem = carouselItemsList[i]
                                         val carouselInteractionSource = remember(carouselItem.id) { MutableInteractionSource() }
                                         val isCarouselPressed by carouselInteractionSource.collectIsPressedAsState()
                                         val carouselItemScale by animateFloatAsState(
                                             targetValue = if (isCarouselPressed) 0.93f else 1f,
-                                            animationSpec = spring(
-                                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                stiffness = Spring.StiffnessMedium
-                                            ),
-                                            label = "carouselItemScale"
+                                            animationSpec =
+                                                spring(
+                                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                    stiffness = Spring.StiffnessMedium,
+                                                ),
+                                            label = "carouselItemScale",
                                         )
                                         coil.compose.AsyncImage(
                                             model = "${com.kiran.movie.core.ui.BuildConfig.BASE_IMAGE_URL}${carouselItem.posterPath}",
                                             contentDescription = carouselItem.title,
                                             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .scale(carouselItemScale)
-                                                .maskClip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                                                .clickable(
-                                                    interactionSource = carouselInteractionSource,
-                                                    indication = null,
-                                                    onClick = { selectedItemForDetails = carouselItem }
-                                                )
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxSize()
+                                                    .scale(carouselItemScale)
+                                                    .maskClip(
+                                                        androidx.compose.foundation.shape
+                                                            .RoundedCornerShape(8.dp),
+                                                    ).clickable(
+                                                        interactionSource = carouselInteractionSource,
+                                                        indication = null,
+                                                        onClick = { selectedItemForDetails = carouselItem },
+                                                    ),
                                         )
                                     }
                                 }
@@ -277,32 +299,41 @@ fun TvShowsScreen(
                                         onBookmarkClick = {
                                             viewModel.onEvent(TvShowsContract.Event.ToggleBookmark(it))
                                         },
-                                        onItemClick = { selectedItemForDetails = it }
+                                        onItemClick = { selectedItemForDetails = it },
                                     )
                                 }
                             }
                         }
-                        
+
                         lazyPagingItems.apply {
                             when {
                                 loadState.refresh is LoadState.Loading -> {
-                                    item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                                    item(span = {
+                                        androidx.compose.foundation.lazy.grid
+                                            .GridItemSpan(maxLineSpan)
+                                    }) {
                                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                                             CircularProgressIndicator(modifier = Modifier.padding(16.dp).size(32.dp))
                                         }
                                     }
                                 }
+
                                 loadState.append is LoadState.Loading -> {
-                                    item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                                    item(span = {
+                                        androidx.compose.foundation.lazy.grid
+                                            .GridItemSpan(maxLineSpan)
+                                    }) {
                                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                                             CircularProgressIndicator(modifier = Modifier.padding(16.dp).size(32.dp))
                                         }
                                     }
                                 }
+
                                 loadState.refresh is LoadState.Error -> {
                                     val e = lazyPagingItems.loadState.refresh as LoadState.Error
                                     item { Text(text = e.error.localizedMessage ?: "Error", color = MaterialTheme.colorScheme.error) }
                                 }
+
                                 loadState.append is LoadState.Error -> {
                                     val e = lazyPagingItems.loadState.append as LoadState.Error
                                     item { Text(text = e.error.localizedMessage ?: "Error", color = MaterialTheme.colorScheme.error) }
@@ -323,9 +354,7 @@ fun TvShowsScreen(
                 coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                     if (!sheetState.isVisible) selectedItemForDetails = null
                 }
-            }
+            },
         )
     }
 }
-
-

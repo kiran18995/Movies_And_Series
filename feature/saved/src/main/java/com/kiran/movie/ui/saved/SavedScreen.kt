@@ -15,15 +15,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -46,11 +48,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kiran.movie.core.ui.R
 import com.kiran.movie.core.ui.components.EmptyStateScreen
 import com.kiran.movie.core.ui.components.ItemCard
-import com.kiran.movie.core.ui.R
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import com.kiran.movie.core.ui.details.ItemDetailsBottomSheet
 import com.kiran.movie.data.models.Item
 import es.dmoral.toasty.Toasty
@@ -63,7 +63,7 @@ fun SavedScreen(
     onListEmptyStateChange: (Boolean) -> Unit,
     onUpdateSearchHint: (String) -> Unit,
     innerPadding: PaddingValues,
-    viewModel: SavedViewModel = hiltViewModel()
+    viewModel: SavedViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val isMovieTab by viewModel.isMovieTab.collectAsState()
@@ -96,32 +96,35 @@ fun SavedScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
     ) {
         when (val currentState = state) {
             is SavedContract.State.Loading -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
                 Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
+
             is SavedContract.State.Error -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
                 Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(text = currentState.message, color = MaterialTheme.colorScheme.error)
                 }
             }
+
             is SavedContract.State.Success -> {
                 LaunchedEffect(currentState.items.size) {
                     onListEmptyStateChange(currentState.items.isEmpty())
@@ -131,39 +134,42 @@ fun SavedScreen(
                 val moviesTabScale by animateFloatAsState(
                     targetValue = if (isMovieTab) 1.12f else 1f,
                     animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
-                    label = "moviesTabScale"
+                    label = "moviesTabScale",
                 )
                 val tvTabScale by animateFloatAsState(
                     targetValue = if (!isMovieTab) 1.12f else 1f,
                     animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
-                    label = "tvTabScale"
+                    label = "tvTabScale",
                 )
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 15.dp, vertical = 16.dp)
-                            .padding(top = innerPadding.calculateTopPadding())
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 15.dp, vertical = 16.dp)
+                                .padding(top = innerPadding.calculateTopPadding()),
                     ) {
                         Text(
                             text = stringResource(id = R.string.movies),
                             color = if (isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .padding(end = 16.dp)
-                                .scale(moviesTabScale)
-                                .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(true)) }
+                            modifier =
+                                Modifier
+                                    .padding(end = 16.dp)
+                                    .scale(moviesTabScale)
+                                    .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(true)) },
                         )
                         Text(
                             text = stringResource(id = R.string.tv_shows),
                             color = if (!isMovieTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .scale(tvTabScale)
-                                .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) }
+                            modifier =
+                                Modifier
+                                    .scale(tvTabScale)
+                                    .clickable { viewModel.onEvent(SavedContract.Event.ChangeTab(false)) },
                         )
                     }
 
@@ -179,21 +185,22 @@ fun SavedScreen(
                                     .togetherWith(slideOutHorizontally(tween(350)) { -it } + fadeOut(tween(200)))
                             }
                         },
-                        label = "savedTabContent"
+                        label = "savedTabContent",
                     ) { (movieTab, state) ->
                         if (state.items.isEmpty()) {
                             EmptyStateScreen(
                                 icon = Icons.Default.Star,
                                 message = if (searchQuery.isNotEmpty()) "No saved items found for '$searchQuery'" else "No bookmarks yet",
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize(),
                             )
                         } else {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(2),
-                                contentPadding = PaddingValues(
-                                    bottom = innerPadding.calculateBottomPadding()
-                                ),
-                                modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp)
+                                contentPadding =
+                                    PaddingValues(
+                                        bottom = innerPadding.calculateBottomPadding(),
+                                    ),
+                                modifier = Modifier.fillMaxSize().padding(horizontal = 15.dp),
                             ) {
                                 items(state.items) { item ->
                                     ItemCard(
@@ -201,7 +208,7 @@ fun SavedScreen(
                                         onBookmarkClick = {
                                             viewModel.onEvent(SavedContract.Event.ToggleBookmark(it))
                                         },
-                                        onItemClick = { selectedItemForDetails = it }
+                                        onItemClick = { selectedItemForDetails = it },
                                     )
                                 }
                             }
@@ -220,8 +227,7 @@ fun SavedScreen(
                 coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                     if (!sheetState.isVisible) selectedItemForDetails = null
                 }
-            }
+            },
         )
     }
 }
-

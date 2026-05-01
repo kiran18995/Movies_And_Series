@@ -51,7 +51,7 @@ interface MoviesAndSeriesApi {
     /**
      * Fetch TV show details including credits and videos.
      */
-    @GET("tv/{series_id}?append_to_response=credits,videos&language=en-US")
+    @GET("tv/{series_id}?append_to_response=credits,videos,external_ids&language=en-US")
     suspend fun getTvShowDetails(
         @Path("series_id") seriesId: Int
     ): ItemDetails

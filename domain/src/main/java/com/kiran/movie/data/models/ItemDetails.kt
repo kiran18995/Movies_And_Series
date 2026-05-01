@@ -17,7 +17,13 @@ data class ItemDetails(
     val status: String?,
     val tagline: String?,
     val credits: Credits?,
-    val videos: Videos?
+    val videos: Videos?,
+    @SerializedName("imdb_id") val imdbId: String?,
+    @SerializedName("external_ids") val externalIds: ExternalIds?
+)
+
+data class ExternalIds(
+    @SerializedName("imdb_id") val imdbId: String?
 )
 
 data class Genre(
