@@ -24,5 +24,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.kiran.movie.core.ui.webview.MovieWebViewActivity"
+            android:exported="false"
+            android:hardwareAccelerated="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="user" />
     </application>
 </manifest>
