@@ -150,9 +150,16 @@ fun MoviesScreen(
                 }
 
                 if (lazyPagingItems.itemCount == 0 && lazyPagingItems.loadState.refresh !is LoadState.Loading) {
+                    val errorMsg = if (lazyPagingItems.loadState.refresh is LoadState.Error) {
+                        "Error: " + (lazyPagingItems.loadState.refresh as LoadState.Error).error.message
+                    } else if (searchQuery.isNotEmpty()) {
+                        "No movies found for '$searchQuery'"
+                    } else {
+                        "No movies found"
+                    }
                     EmptyStateScreen(
                         icon = Icons.Default.Search,
-                        message = if (searchQuery.isNotEmpty()) "No movies found for '$searchQuery'" else "No movies found",
+                        message = errorMsg,
                         modifier = Modifier.padding(innerPadding),
                     )
                 } else {

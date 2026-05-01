@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -26,6 +29,30 @@ android {
         buildConfigField("String", "API_READ_ACCESS_TOKEN", "\"$accessToken\"")
     }
 
+    signingConfigs {
+        create("release") {
+            // NOTE: Add these values to your local.properties file:
+            // RELEASE_STORE_FILE=/path/to/your/keystore.jks
+            // RELEASE_STORE_PASSWORD=your_store_password
+            // RELEASE_KEY_ALIAS=your_key_alias
+            // RELEASE_KEY_PASSWORD=your_key_password
+            
+            val keystorePropertiesFile = rootProject.file("local.properties")
+            if (keystorePropertiesFile.exists()) {
+                val properties = Properties()
+                properties.load(FileInputStream(keystorePropertiesFile))
+                
+                val storeFilePath = properties.getProperty("RELEASE_STORE_FILE")
+                if (storeFilePath != null) {
+                    storeFile = rootProject.file(storeFilePath)
+                    storePassword = properties.getProperty("RELEASE_STORE_PASSWORD")
+                    keyAlias = properties.getProperty("RELEASE_KEY_ALIAS")
+                    keyPassword = properties.getProperty("RELEASE_KEY_PASSWORD")
+                }
+            }
+        }
+    }
+
     buildTypes {
         getByName("debug") {
             isDebuggable = true
@@ -36,6 +63,7 @@ android {
             )
         }
         getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

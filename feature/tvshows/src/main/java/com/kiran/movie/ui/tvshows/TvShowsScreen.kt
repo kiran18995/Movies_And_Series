@@ -151,10 +151,17 @@ fun TvShowsScreen(
                 }
 
                 if (lazyPagingItems.itemCount == 0 && lazyPagingItems.loadState.refresh !is LoadState.Loading) {
+                    val errorMsg = if (lazyPagingItems.loadState.refresh is LoadState.Error) {
+                        "Error: " + (lazyPagingItems.loadState.refresh as LoadState.Error).error.message
+                    } else if (searchQuery.isNotEmpty()) {
+                        "No TV shows found for '$searchQuery'"
+                    } else {
+                        "No TV shows found"
+                    }
                     EmptyStateScreen(
                         icon = Icons.Default.Search,
-                        message = if (searchQuery.isNotEmpty()) "No TV shows found for '$searchQuery'" else "No TV shows found",
-                        modifier = Modifier.padding(innerPadding),
+                        message = errorMsg,
+                        modifier = Modifier.padding(innerPadding)
                     )
                 } else {
                     LazyVerticalGrid(
