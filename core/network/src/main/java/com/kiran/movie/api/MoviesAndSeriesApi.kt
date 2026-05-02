@@ -27,7 +27,7 @@ interface MoviesAndSeriesApi {
      */
     @GET("movie/{category}?language=en-US")
     suspend fun getMoviesByCategory(
-        @Path("category") category: String,
+        @Path("category") category: String?,
         @Query("page") page: Int
     ): ItemResponse
 

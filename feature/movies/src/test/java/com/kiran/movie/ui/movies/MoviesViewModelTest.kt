@@ -3,7 +3,7 @@ package com.kiran.movie.ui.movies
 import androidx.paging.PagingData
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
-import com.kiran.movie.domain.usecase.GetMoviesListUseCase
+import com.kiran.movie.domain.usecase.GetUpcomingMoviesUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import io.mockk.coEvery
@@ -32,23 +32,23 @@ class MoviesViewModelTest {
     private val mockGetMoviesUseCase = mockk<GetMoviesUseCase>()
     private val mockToggleBookmarkUseCase = mockk<ToggleBookmarkUseCase>()
     private val mockGetBookmarkedIdsUseCase = mockk<GetBookmarkedIdsUseCase>()
-    private val mockGetMoviesListUseCase = mockk<GetMoviesListUseCase>()
+    private val mockGetUpcomingMoviesUseCase = mockk<GetUpcomingMoviesUseCase>()
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
 
         // GetMoviesUseCase.invoke is NOT suspend — use plain every/verify (issue #8)
-        every { mockGetMoviesUseCase.invoke(any(), any()) } returns flowOf(PagingData.empty())
+        every { mockGetMoviesUseCase.invoke(any(), any(), any()) } returns flowOf(PagingData.empty())
         coEvery { mockGetBookmarkedIdsUseCase.invoke() } returns emptyList()
         coEvery { mockToggleBookmarkUseCase.invoke(any()) } returns Unit
-        coEvery { mockGetMoviesListUseCase.invoke(any(), any()) } returns emptyList()
+        coEvery { mockGetUpcomingMoviesUseCase.invoke(any(), any()) } returns emptyList()
 
         viewModel = MoviesViewModel(
             mockGetMoviesUseCase,
             mockToggleBookmarkUseCase,
             mockGetBookmarkedIdsUseCase,
-            mockGetMoviesListUseCase
+            mockGetUpcomingMoviesUseCase
         )
     }
 
@@ -105,5 +105,35 @@ class MoviesViewModelTest {
 
         coVerify { mockToggleBookmarkUseCase.invoke(testItem) }
         coVerify { mockGetBookmarkedIdsUseCase.invoke() }
+    }
+
+    @Test
+    fun `SelectLanguage should update language and trigger re-fetch`() = runTest {
+        // Clear initial invocation
+        io.mockk.clearMocks(mockGetMoviesUseCase, mockGetUpcomingMoviesUseCase, answers = false)
+
+        val newLanguage = com.kiran.movie.core.ui.models.MovieLanguage.HINDI
+        
+        viewModel.onEvent(MoviesContract.Event.SelectLanguage(newLanguage))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify carousel refresh
+        coVerify { mockGetUpcomingMoviesUseCase.invoke(newLanguage.code, any()) }
+        // Verify movies refresh with new language
+        verify { mockGetMoviesUseCase.invoke(any(), newLanguage.code, any()) }
+    }
+
+    @Test
+    fun `SelectSortOrder should update sort order and trigger re-fetch`() = runTest {
+        // Clear initial invocation
+        io.mockk.clearMocks(mockGetMoviesUseCase, answers = false)
+
+        val newSortOrder = com.kiran.movie.core.ui.models.MovieSortOrder.TOP_RATED
+        
+        viewModel.onEvent(MoviesContract.Event.SelectSortOrder(newSortOrder))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify movies refresh with new sort order
+        verify { mockGetMoviesUseCase.invoke(any(), any(), newSortOrder.value) }
     }
 }

@@ -7,7 +7,7 @@ import javax.inject.Inject
 class GetMoviesListUseCase @Inject constructor(
     private val repository: MoviesAndSeriesRepository
 ) {
-    suspend operator fun invoke(category: String, page: Int = 1): List<Item> {
+    suspend operator fun invoke(category: String?, page: Int = 1): List<Item> {
         return repository.getMoviesList(category, page)
     }
 }

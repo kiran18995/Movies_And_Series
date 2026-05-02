@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 import androidx.room.withTransaction
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class MoviesAndSeriesRepositoryImpl @Inject constructor(
     private val moviesAndSeriesApi: MoviesAndSeriesApi,
@@ -70,14 +71,15 @@ class MoviesAndSeriesRepositoryImpl @Inject constructor(
 
     override suspend fun getUpcomingMoviesByLanguage(language: String?, page: Int): List<Item> {
         return try {
-            val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val today = sdf.format(Calendar.getInstance().time)
             moviesAndSeriesApi.getUpcomingMoviesByLanguage(language, today, page).results.map { it.apply { isMovie = true } }
         } catch (e: Exception) {
             emptyList()
         }
     }
 
-    override suspend fun getMoviesList(category: String, page: Int): List<Item> {
+    override suspend fun getMoviesList(category: String?, page: Int): List<Item> {
         return try {
             moviesAndSeriesApi.getMoviesByCategory(category, page).results.map { it.apply { isMovie = true } }
         } catch (e: Exception) {

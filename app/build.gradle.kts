@@ -11,12 +11,12 @@ plugins {
 
 android {
     namespace = "com.kiran.movie"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.kiran.movie"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 2
         versionName = "1.1"
 

@@ -8,8 +8,8 @@ import com.kiran.movie.core.ui.models.MovieLanguage
 import com.kiran.movie.core.ui.models.MovieSortOrder
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
-import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.GetUpcomingMoviesUseCase
+import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException

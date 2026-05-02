@@ -8,6 +8,11 @@ dependencies {
     implementation(libs.androidx.room.common)
     implementation(libs.gson)
     implementation("javax.inject:javax.inject:1")
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 }
 
 java {
