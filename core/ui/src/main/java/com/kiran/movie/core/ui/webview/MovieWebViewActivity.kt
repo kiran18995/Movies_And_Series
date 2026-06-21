@@ -103,8 +103,8 @@ class MovieWebViewActivity : ComponentActivity() {
             settings.useWideViewPort = true
             settings.loadWithOverviewMode = true
             settings.builtInZoomControls = false
-            settings.setSupportMultipleWindows(true)
-            settings.javaScriptCanOpenWindowsAutomatically = true
+            settings.setSupportMultipleWindows(false)
+            settings.javaScriptCanOpenWindowsAutomatically = false
             settings.userAgentString =
                 "Mozilla/5.0 (Linux; Android 10; Mobile) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -118,6 +118,18 @@ class MovieWebViewActivity : ComponentActivity() {
                 ): WebResourceResponse? {
                     if (shouldBlock(request.url.toString())) return EMPTY_RESPONSE
                     return super.shouldInterceptRequest(view, request)
+                }
+
+                override fun shouldOverrideUrlLoading(
+                    view: WebView,
+                    request: WebResourceRequest,
+                ): Boolean {
+                    // Block all top-level navigations (ad redirects)
+                    val host = request.url.host ?: return true
+                    if (!host.contains("streamimdb.ru")) {
+                        return true // True means we intercept it and cancel the navigation
+                    }
+                    return false
                 }
             }
 
