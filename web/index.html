@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movies &amp; Series — Discover Popular Films &amp; TV Shows</title>
+  <meta name="description" content="Browse popular movies and TV shows, search your favourites, watch trailers, and bookmark titles for later. Powered by TMDB." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+<body>
+  <!-- ── TOP NAV ─────────────────────────────────────────────────────────── -->
+  <header class="navbar" id="navbar">
+    <div class="nav-brand">
+      <span class="brand-icon">🎬</span>
+      <span class="brand-text">Movies &amp; Series</span>
+    </div>
+
+    <div class="search-wrapper" id="searchWrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Search movies &amp; shows…"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="search-clear" id="searchClear" title="Clear search">✕</button>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" id="tab-movies" data-tab="movies">🎥 Movies</button>
+      <button class="nav-tab" id="tab-tvshows" data-tab="tvshows">📺 TV Shows</button>
+      <button class="nav-tab" id="tab-saved" data-tab="saved">🔖 Saved</button>
+    </nav>
+  </header>
+
+  <!-- ── HERO BANNER ────────────────────────────────────────────────────── -->
+  <section class="hero" id="heroBanner">
+    <div class="hero-backdrop" id="heroBackdrop"></div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content" id="heroContent">
+      <span class="hero-badge" id="heroBadge">🔥 Trending</span>
+      <h1 class="hero-title" id="heroTitle">Loading…</h1>
+      <p class="hero-overview" id="heroOverview"></p>
+      <div class="hero-meta" id="heroMeta"></div>
+      <div class="hero-actions">
+        <button class="btn-play" id="heroPlayBtn">▶ Play Now</button>
+        <button class="btn-info" id="heroInfoBtn">ℹ More Info</button>
+      </div>
+    </div>
+    <div class="hero-dots" id="heroDots"></div>
+  </section>
+
+  <!-- ── FILTER BAR ─────────────────────────────────────────────────────── -->
+  <div class="filter-bar" id="filterBar">
+    <div class="filter-group">
+      <label class="filter-label">Sort</label>
+      <select class="filter-select" id="sortSelect">
+        <option value="popularity.desc">Most Popular</option>
+        <option value="vote_average.desc">Top Rated</option>
+        <option value="release_date.desc">Latest</option>
+        <option value="revenue.desc">Box Office</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Language</label>
+      <select class="filter-select" id="langSelect">
+        <option value="">All</option>
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="ko">Korean</option>
+        <option value="ja">Japanese</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Genre</label>
+      <select class="filter-select" id="genreSelect">
+        <option value="">All Genres</option>
+      </select>
+    </div>
+    <div class="results-count" id="resultsCount"></div>
+  </div>
+
+  <!-- ── MAIN GRID ──────────────────────────────────────────────────────── -->
+  <main class="main-content" id="mainContent">
+    <div class="grid" id="itemGrid"></div>
+
+    <!-- Skeleton loader -->
+    <div class="grid skeleton-grid" id="skeletonGrid">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+
+    <!-- Load more trigger -->
+    <div id="loadMoreTrigger" class="load-more-trigger"></div>
+
+    <!-- Empty state -->
+    <div class="empty-state hidden" id="emptyState">
+      <div class="empty-icon" id="emptyIcon">🎬</div>
+      <h2 class="empty-title" id="emptyTitle">Nothing here yet</h2>
+      <p class="empty-subtitle" id="emptySubtitle">Try a different search or explore other tabs.</p>
+    </div>
+  </main>
+
+  <!-- ── DETAIL MODAL ───────────────────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+      <div class="modal-backdrop-wrap">
+        <img class="modal-backdrop" id="modalBackdrop" src="" alt="" />
+        <div class="modal-backdrop-fade"></div>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PLAYER MODAL (iframe + source tabs) ────────────────────────────── -->
+  <div class="modal-overlay hidden" id="playerOverlay">
+    <div class="player-modal" id="playerModal">
+
+      <!-- Header -->
+      <div class="player-header">
+        <div class="player-header-left">
+          <span class="player-play-icon">▶</span>
+          <span id="playerTitle" class="player-title-text"></span>
+        </div>
+        <button class="modal-close" id="playerClose" aria-label="Close player">✕</button>
+      </div>
+
+      <!-- Source tabs -->
+      <div class="player-tabs hidden" id="playerTabs"></div>
+
+      <!-- Iframe player -->
+      <div class="player-frame-wrap" id="playerFrameWrap">
+        <div class="iframe-loader hidden" id="iframeLoader">
+          <div class="spinner"></div>
+        </div>
+        <iframe
+          id="playerFrame"
+          class="player-frame"
+          src=""
+          allowfullscreen
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+          onload="setTimeout(() => document.getElementById('iframeLoader').classList.add('hidden'), 2500)"
+        ></iframe>
+      </div>
+
+      <!-- External server prompt (Servers 2-5) -->
+      <div class="player-external hidden" id="playerExternal">
+        <img class="ext-poster" id="extPoster" src="" alt="" />
+        <div class="ext-info">
+          <p class="ext-label">🌐 External Server</p>
+          <p class="ext-sub">This server opens in a new tab. Click below to start watching.</p>
+          <a class="btn-play ext-open-btn" id="extOpenBtn" href="#" target="_blank" rel="noopener noreferrer">
+            ▶ Watch Now →
+          </a>
+          <p class="ext-tip">💡 Tip: If it doesn't load, try Server 1 (built-in player).</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── EPISODE PICKER ─────────────────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="episodeOverlay">
+    <div class="episode-modal" id="episodeModal">
+      <div class="episode-header">
+        <h3 class="episode-modal-title">Select Season &amp; Episode</h3>
+        <button class="modal-close" id="episodeClose">✕</button>
+      </div>
+      <div class="episode-body">
+        <div class="picker-section">
+          <p class="picker-label">Season</p>
+          <div class="chip-row" id="seasonChips"></div>
+        </div>
+        <div class="picker-section" id="episodeSection">
+          <p class="picker-label">Episode</p>
+          <div class="chip-row" id="episodeChips"></div>
+        </div>
+      </div>
+      <div class="episode-footer">
+        <button class="btn-play full-width" id="playEpisodeBtn">▶ Play</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ──────────────────────────────────────────────────────────── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
