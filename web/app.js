@@ -202,7 +202,7 @@ function renderHero() {
   document.getElementById('heroMeta').innerHTML = `
     ${rating ? `<span class="rating-pill">⭐ ${rating}</span>` : ''}
     ${year ? `<span>${year}</span>` : ''}
-    <span>${item.isMovie ? '🎥 Movie' : '📺 TV Show'}</span>
+    <span>${item.isMovie ? 'Movie' : 'TV Show'}</span>
   `;
 
   document.getElementById('heroBadge').textContent = item.isMovie ? '🔥 Popular Movie' : '🔥 Popular Show';
@@ -277,7 +277,7 @@ function buildCard(item, delay = 0) {
   card.innerHTML = `
     <img src="${posterUrl}" alt="${escHtml(item.title)}" loading="lazy" />
     <div class="card-overlay"></div>
-    <div class="card-type">${item.isMovie ? '🎥' : '📺'}</div>
+    <div class="card-type">${item.isMovie ? 'Movie' : 'Series'}</div>
     <button class="card-bookmark ${bm ? 'bookmarked' : ''}" data-id="${item.id}" title="${bm ? 'Remove bookmark' : 'Bookmark'}">${bm ? '🔖' : '🏷'}</button>
     <div class="card-info">
       <div class="card-title">${escHtml(item.title)}</div>
