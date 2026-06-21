@@ -2,18 +2,18 @@
    DESIGN TOKENS
    ─────────────────────────────────────────────────────────────── */
 :root {
-  --bg:          #0a0a0f;
-  --bg2:         #111118;
-  --surface:     #16161f;
-  --surface2:    #1e1e2a;
-  --border:      rgba(255,255,255,0.08);
-  --primary:     #7b61ff;
-  --primary-dim: rgba(123,97,255,0.18);
-  --accent:      #e040fb;
+  --bg:          #141414;
+  --bg2:         #000000;
+  --surface:     #181818;
+  --surface2:    #2F2F2F;
+  --border:      rgba(255,255,255,0.15);
+  --primary:     #E50914;
+  --primary-dim: rgba(229,9,20,0.18);
+  --accent:      #B81D24;
   --gold:        #ffc107;
-  --text:        #f0f0f8;
-  --text-muted:  #8888aa;
-  --red:         #f44336;
+  --text:        #ffffff;
+  --text-muted:  #808080;
+  --red:         #E50914;
   --green:       #4caf50;
   --amber:       #ffc107;
   --radius:      12px;
