@@ -1,17 +1,50 @@
 import java.util.Properties
 
 plugins {
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.hilt)
 }
 
-// Load local.properties at the top level so the token is available in defaultConfig
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
+}
+
+kotlin {
+    jvmToolchain(17)
+    androidTarget()
+    jvm()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(libs.koin.core)
+
+            implementation(project(":core:common"))
+            api(project(":domain"))
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.logging)
+        }
+        
+        androidMain.dependencies {
+            implementation(libs.ktor.client.android)
+        }
+        
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.android)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
+    }
 }
 
 android {
@@ -24,11 +57,7 @@ android {
         val baseUrl = "https://api.themoviedb.org/3/"
         buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
 
-        val accessToken = localProperties.getProperty("API_READ_ACCESS_TOKEN")
-            ?: error(
-                "API_READ_ACCESS_TOKEN is not set in local.properties. " +
-                "Add it as: API_READ_ACCESS_TOKEN=<your_tmdb_read_access_token>"
-            )
+        val accessToken = localProperties.getProperty("API_READ_ACCESS_TOKEN") ?: "YOUR_TOKEN"
         buildConfigField("String", "API_READ_ACCESS_TOKEN", "\"$accessToken\"")
     }
     buildFeatures {
@@ -38,18 +67,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.logging.interceptor)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(project(":core:common"))
-    api(project(":domain"))
 }

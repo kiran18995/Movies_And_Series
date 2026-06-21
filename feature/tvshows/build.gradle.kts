@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt)
 }
 
 android {
@@ -27,6 +26,11 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.fragment.ktx)
@@ -36,8 +40,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.toasty)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
     implementation(project(":domain"))
     implementation(project(":core:ui"))
     implementation(project(":core:common"))
@@ -50,7 +52,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.paging.compose)
     debugImplementation(libs.androidx.ui.tooling)
 }

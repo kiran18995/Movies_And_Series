@@ -47,7 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import com.kiran.movie.core.ui.R
 import com.kiran.movie.core.ui.components.EmptyStateScreen
 import com.kiran.movie.core.ui.components.ItemCard
@@ -63,7 +63,7 @@ fun SavedScreen(
     onListEmptyStateChange: (Boolean) -> Unit,
     onUpdateSearchHint: (String) -> Unit,
     innerPadding: PaddingValues,
-    viewModel: SavedViewModel = hiltViewModel(),
+    viewModel: SavedViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val isMovieTab by viewModel.isMovieTab.collectAsState()

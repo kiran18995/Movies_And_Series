@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$/feature/movies" />
             <option value="$PROJECT_DIR$/feature/saved" />
             <option value="$PROJECT_DIR$/feature/tvshows" />
+            <option value="$PROJECT_DIR$/shared" />
           </set>
         </option>
       </GradleProjectSettings>

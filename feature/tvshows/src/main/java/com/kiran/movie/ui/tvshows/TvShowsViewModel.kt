@@ -10,7 +10,6 @@ import com.kiran.movie.domain.usecase.GetTvShowsListUseCase
 import com.kiran.movie.domain.usecase.GetTvShowsUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import com.kiran.movie.data.models.Item
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,11 +21,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
-@HiltViewModel
-class TvShowsViewModel @Inject constructor(
+class TvShowsViewModel (
     private val getTvShowsUseCase: GetTvShowsUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
     private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase,

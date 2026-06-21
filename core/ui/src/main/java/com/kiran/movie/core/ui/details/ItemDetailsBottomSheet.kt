@@ -66,7 +66,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.Canvas
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import coil.compose.AsyncImage
 import com.kiran.movie.core.ui.BuildConfig
 import com.kiran.movie.core.ui.webview.MovieWebViewActivity
@@ -127,7 +127,7 @@ fun ItemDetailsBottomSheet(
     item: Item,
     onDismissRequest: () -> Unit,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    viewModel: ItemDetailsViewModel = hiltViewModel(),
+    viewModel: ItemDetailsViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
 

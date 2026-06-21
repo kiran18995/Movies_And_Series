@@ -53,7 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -73,7 +73,7 @@ fun TvShowsScreen(
     searchQuery: String,
     onListEmptyStateChange: (Boolean) -> Unit,
     innerPadding: PaddingValues,
-    viewModel: TvShowsViewModel = hiltViewModel(),
+    viewModel: TvShowsViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val bookmarkedIds by viewModel.bookmarkedIds.collectAsState()

@@ -1,7 +1,16 @@
 package com.kiran.movie
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
+import com.kiran.movie.di.appModule
 
-@HiltAndroidApp
-class MoviesApplication : Application()
+class MoviesApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            androidContext(this@MoviesApplication)
+            modules(appModule)
+        }
+    }
+}

@@ -11,7 +11,6 @@ import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
 import com.kiran.movie.domain.usecase.GetUpcomingMoviesUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,11 +22,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
-@HiltViewModel
-class MoviesViewModel @Inject constructor(
+class MoviesViewModel (
     private val getMoviesUseCase: GetMoviesUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
     private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase,

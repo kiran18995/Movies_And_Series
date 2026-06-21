@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.compose)
 }
@@ -30,6 +29,11 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+
     api(libs.androidx.core.ktx)
     api(libs.androidx.appcompat)
     api(libs.material)
@@ -38,8 +42,6 @@ dependencies {
     api(libs.androidx.paging.runtime.ktx)
     api(libs.coil)
     api(libs.shimmer)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
     api(project(":domain"))
 
     val composeBom = platform(libs.compose.bom)
@@ -50,6 +52,5 @@ dependencies {
     api(libs.androidx.material3)
     api(libs.coil.compose)
     api(libs.androidx.paging.compose)
-    api(libs.androidx.hilt.navigation.compose)
     debugApi(libs.androidx.ui.tooling)
 }
