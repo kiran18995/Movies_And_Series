@@ -443,11 +443,19 @@ let playerIsTV           = false;
 
 // ── PLAYER ────────────────────────────────────────────────────────────────
 function openPlayer(item) {
+  if (!item.isMovie) {
+    openEpisodePicker(item);
+    return;
+  }
+  launchPlayer(item.title || item.name, false, item, 1, 1);
+}
+
+function launchPlayer(title, isTV, item, season, episode) {
   const url = item.isMovie 
     ? `https://streamimdb.ru/embed/movie/${item.id}` 
-    : `https://streamimdb.ru/embed/tv/${item.id}`;
+    : `https://streamimdb.ru/embed/tv/${item.id}/${season}/${episode}`;
 
-  document.getElementById('playerTitle').textContent = item.title || item.name;
+  document.getElementById('playerTitle').textContent = title;
   
   // Hide external prompt, hide tabs
   const tabs = document.getElementById('playerTabs');
