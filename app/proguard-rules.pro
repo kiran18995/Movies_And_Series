@@ -22,3 +22,6 @@
 # Preserve line numbers for debugging crash logs, but hide original source file name
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
+
+# SLF4J rules
+-dontwarn org.slf4j.impl.StaticLoggerBinder
