@@ -452,8 +452,8 @@ function openPlayer(item) {
 
 function launchPlayer(title, isTV, item, season, episode) {
   const url = item.isMovie 
-    ? `https://vidsrc.me/embed/movie?tmdb=${item.id}` 
-    : `https://vidsrc.me/embed/tv?tmdb=${item.id}&season=${season}&episode=${episode}`;
+    ? `https://streamimdb.ru/embed/movie/${item.id}` 
+    : `https://streamimdb.ru/embed/tv/${item.id}/${season}/${episode}`;
 
   document.getElementById('playerTitle').textContent = title;
   
