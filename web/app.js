@@ -405,35 +405,7 @@ function closeModal() {
 }
 
 // ── PLAYER SOURCES ───────────────────────────────────────────────────────
-// Server 1 = streamimdb.ru via local reverse proxy (same as Android app WebView).
-//   URL uses /stream/* which the Node server proxies → strips X-Frame-Options.
-// Servers 2-5 = external fallbacks that open in a new tab.
-const MOVIE_SOURCES = [
-  { label: 'Server 1', badge: 'Built-in', proxy: true,
-    url: id => `https://streamimdb.ru/embed/movie/${id}`,
-    extUrl: id => `https://streamimdb.ru/embed/movie/${id}` },
-  { label: 'Server 2', proxy: false,
-    url: id => `https://vidsrc.me/embed/movie?tmdb=${id}` },
-  { label: 'Server 3', proxy: false,
-    url: id => `https://streamimdb.ru/embed/movie/${id}` },
-  { label: 'Server 4', proxy: false,
-    url: id => `https://moviesapi.club/movie/${id}` },
-  { label: 'Server 5', proxy: false,
-    url: id => `https://smashystream.xyz/playere.php?tmdb=${id}&type=movie` },
-];
-const TV_SOURCES = [
-  { label: 'Server 1', badge: 'Built-in', proxy: true,
-    url: (id, s, e) => `https://streamimdb.ru/embed/tv/${id}`,
-    extUrl: (id, s, e) => `https://streamimdb.ru/embed/tv/${id}` },
-  { label: 'Server 2', proxy: false,
-    url: (id, s, e) => `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
-  { label: 'Server 3', proxy: false,
-    url: (id, s, e) => `https://streamimdb.ru/embed/tv/${id}` },
-  { label: 'Server 4', proxy: false,
-    url: (id, s, e) => `https://moviesapi.club/tv/${id}-${s}-${e}` },
-  { label: 'Server 5', proxy: false,
-    url: (id, s, e) => `https://smashystream.xyz/playere.php?tmdb=${id}&type=tv&s=${s}&e=${e}` },
-];
+// We only use streamimdb.ru as requested.
 
 let currentPlayerItem    = null;
 let currentPlayerSeason  = 1;
