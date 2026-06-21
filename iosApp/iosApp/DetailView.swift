@@ -31,6 +31,8 @@ struct DetailView: View {
     @StateObject private var state = DetailViewModelState()
     @State private var isLoading = false
     @State private var showingPlayer = false
+    @State private var selectedSeason: Int32 = 1
+    @State private var selectedEpisode: Int32 = 1
     @Environment(\.dismiss) private var dismiss
     
     private var backdropUrl: URL? {
@@ -100,6 +102,49 @@ struct DetailView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 
+                // TV Show Pickers
+                if !item.isMovie, let seasons = state.details?.seasons, !seasons.isEmpty {
+                    HStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Season").font(.caption).foregroundColor(.secondary)
+                            Picker("Season", selection: $selectedSeason) {
+                                ForEach(seasons, id: \.seasonNumber) { season in
+                                    Text("Season \(season.seasonNumber)").tag(season.seasonNumber)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.gray.opacity(0.15))
+                            .cornerRadius(8)
+                            .onChange(of: selectedSeason) { _ in
+                                selectedEpisode = 1
+                            }
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Episode").font(.caption).foregroundColor(.secondary)
+                            let currentSeason = seasons.first(where: { $0.seasonNumber == selectedSeason })
+                            let maxEp = currentSeason?.episodeCount ?? 1
+                            if maxEp > 0 {
+                                Picker("Episode", selection: $selectedEpisode) {
+                                    ForEach(1...maxEp, id: \.self) { ep in
+                                        Text("Episode \(ep)").tag(Int32(ep))
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.gray.opacity(0.15))
+                                .cornerRadius(8)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                }
+
                 // Play Button
                 Button(action: { showingPlayer = true }) {
                     HStack {
@@ -117,7 +162,7 @@ struct DetailView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .fullScreenCover(isPresented: $showingPlayer) {
-                    if let url = URL(string: item.isMovie ? "https://streamimdb.ru/embed/movie/\(item.id)" : "https://streamimdb.ru/embed/tv/\(item.id)") {
+                    if let url = URL(string: item.isMovie ? "https://streamimdb.ru/embed/movie/\(item.id)" : "https://streamimdb.ru/embed/tv/\(item.id)/\(selectedSeason)/\(selectedEpisode)") {
                         SafariView(url: url)
                             .ignoresSafeArea()
                     }
