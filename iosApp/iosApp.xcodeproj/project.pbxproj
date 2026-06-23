@@ -7,24 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A00000000000000000000050 /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040; };
-		A00000000000000000000051 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041; };
-		A00000000000000000000052 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000042; };
-		A00000000000000000000053 /* TvShowsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000043; };
-		A00000000000000000000054 /* SavedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000044; };
-		A00000000000000000000055 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000045; };
-		A00000000000000000000056 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000046; };
+		91BB3AEAD42BAFBA0AFF01ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 307E95D4EF58A61D44EE2050 /* Assets.xcassets */; };
+		A00000000000000000000050 /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* iOSApp.swift */; };
+		A00000000000000000000051 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* ContentView.swift */; };
+		A00000000000000000000052 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000042 /* HomeView.swift */; };
+		A00000000000000000000053 /* TvShowsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000043 /* TvShowsView.swift */; };
+		A00000000000000000000054 /* SavedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000044 /* SavedView.swift */; };
+		A00000000000000000000055 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000045 /* DetailView.swift */; };
+		A00000000000000000000056 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000046 /* Components.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A00000000000000000000030 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iosApp.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A00000000000000000000040 /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSApp.swift"; sourceTree = "<group>"; };
-		A00000000000000000000041 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView.swift"; sourceTree = "<group>"; };
-		A00000000000000000000042 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeView.swift"; sourceTree = "<group>"; };
-		A00000000000000000000043 /* TvShowsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TvShowsView.swift"; sourceTree = "<group>"; };
-		A00000000000000000000044 /* SavedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SavedView.swift"; sourceTree = "<group>"; };
-		A00000000000000000000045 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DetailView.swift"; sourceTree = "<group>"; };
-		A00000000000000000000046 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components.swift"; sourceTree = "<group>"; };
+		307E95D4EF58A61D44EE2050 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A00000000000000000000030 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000040 /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
+		A00000000000000000000041 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A00000000000000000000042 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A00000000000000000000043 /* TvShowsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvShowsView.swift; sourceTree = "<group>"; };
+		A00000000000000000000044 /* SavedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedView.swift; sourceTree = "<group>"; };
+		A00000000000000000000045 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		A00000000000000000000046 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		A00000000000000000000060 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -42,31 +44,16 @@
 		A00000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000070,
-				A00000000000000000000004,
-				A00000000000000000000003,
+				A00000000000000000000070 /* iosApp */,
+				A00000000000000000000004 /* Frameworks */,
+				A00000000000000000000003 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		A00000000000000000000070 /* iosApp */ = {
-			isa = PBXGroup;
-			children = (
-				A00000000000000000000040,
-				A00000000000000000000041,
-				A00000000000000000000042,
-				A00000000000000000000043,
-				A00000000000000000000044,
-				A00000000000000000000045,
-				A00000000000000000000046,
-				A00000000000000000000060,
-			);
-			path = iosApp;
 			sourceTree = "<group>";
 		};
 		A00000000000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000030,
+				A00000000000000000000030 /* iosApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -78,17 +65,33 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		A00000000000000000000070 /* iosApp */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000040 /* iOSApp.swift */,
+				A00000000000000000000041 /* ContentView.swift */,
+				A00000000000000000000042 /* HomeView.swift */,
+				A00000000000000000000043 /* TvShowsView.swift */,
+				A00000000000000000000044 /* SavedView.swift */,
+				A00000000000000000000045 /* DetailView.swift */,
+				A00000000000000000000046 /* Components.swift */,
+				A00000000000000000000060 /* Info.plist */,
+				307E95D4EF58A61D44EE2050 /* Assets.xcassets */,
+			);
+			path = iosApp;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		A00000000000000000000010 /* iosApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A00000000000000000000014;
+			buildConfigurationList = A00000000000000000000014 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
-				A00000000000000000000023,
-				A00000000000000000000020,
-				A00000000000000000000021,
-				A00000000000000000000022,
+				A00000000000000000000023 /* Build KMM Framework */,
+				A00000000000000000000020 /* Sources */,
+				A00000000000000000000021 /* Resources */,
+				A00000000000000000000022 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -96,7 +99,7 @@
 			);
 			name = iosApp;
 			productName = iosApp;
-			productReference = A00000000000000000000030;
+			productReference = A00000000000000000000030 /* iosApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -107,14 +110,14 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					A00000000000000000000010 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
 			};
-			buildConfigurationList = A00000000000000000000011;
+			buildConfigurationList = A00000000000000000000011 /* Build configuration list for PBXProject "iosApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -123,11 +126,11 @@
 				Base,
 			);
 			mainGroup = A00000000000000000000002;
-			productRefGroup = A00000000000000000000003;
+			productRefGroup = A00000000000000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A00000000000000000000010,
+				A00000000000000000000010 /* iosApp */,
 			);
 		};
 /* End PBXProject section */
@@ -137,6 +140,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				91BB3AEAD42BAFBA0AFF01ED /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,7 +163,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\ncd \"$SRCROOT/..\"\n./gradlew :shared:linkDebugFrameworkIosSimulatorArm64\nmkdir -p \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/Frameworks\"\ncp -R shared/build/bin/iosSimulatorArm64/debugFramework/shared.framework \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/Frameworks/\"\n/usr/bin/codesign --force --sign - --timestamp=none --generate-entitlement-der \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/Frameworks/shared.framework\"\n";
+			shellScript = "set -e\ncd \"$SRCROOT/..\"\n\nif [ \"$PLATFORM_NAME\" == \"iphoneos\" ]; then\n  ARCH_DIR=\"iosArm64\"\n  GRADLE_TASK=\":shared:linkDebugFrameworkIosArm64\"\nelse\n  ARCH_DIR=\"iosSimulatorArm64\"\n  GRADLE_TASK=\":shared:linkDebugFrameworkIosSimulatorArm64\"\nfi\n\n./gradlew $GRADLE_TASK\n\nmkdir -p \"$SRCROOT/../shared/build/xcode-frameworks\"\nrm -rf \"$SRCROOT/../shared/build/xcode-frameworks/shared.framework\"\ncp -R \"shared/build/bin/$ARCH_DIR/debugFramework/shared.framework\" \"$SRCROOT/../shared/build/xcode-frameworks/\"\n\nmkdir -p \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/Frameworks\"\ncp -R \"$SRCROOT/../shared/build/xcode-frameworks/shared.framework\" \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/Frameworks/\"\nif [ -n \"$EXPANDED_CODE_SIGN_IDENTITY\" ]; then\n  /usr/bin/codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/Frameworks/shared.framework\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -216,6 +220,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = UVYCLA34CK;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -238,6 +243,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -251,12 +257,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEVELOPMENT_TEAM = UVYCLA34CK;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
@@ -274,14 +282,14 @@
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/../shared/build/bin/iosSimulatorArm64/debugFramework",
+					"$(PROJECT_DIR)/../shared/build/xcode-frameworks",
 				);
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = iosApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.kiran.movie.iosApp";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kiran.movie.iosApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -300,14 +308,14 @@
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/../shared/build/bin/iosSimulatorArm64/debugFramework",
+					"$(PROJECT_DIR)/../shared/build/xcode-frameworks",
 				);
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = iosApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.kiran.movie.iosApp";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kiran.movie.iosApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -321,8 +329,8 @@
 		A00000000000000000000011 /* Build configuration list for PBXProject "iosApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A00000000000000000000012,
-				A00000000000000000000013,
+				A00000000000000000000012 /* Debug */,
+				A00000000000000000000013 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -330,13 +338,13 @@
 		A00000000000000000000014 /* Build configuration list for PBXNativeTarget "iosApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A00000000000000000000015,
-				A00000000000000000000016,
+				A00000000000000000000015 /* Debug */,
+				A00000000000000000000016 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = A00000000000000000000001;
+	rootObject = A00000000000000000000001 /* Project object */;
 }

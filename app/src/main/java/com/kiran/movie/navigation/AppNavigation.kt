@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -115,7 +116,9 @@ fun AppNavigation(
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(nestedScrollConnection),
+        modifier = Modifier
+            .nestedScroll(nestedScrollConnection)
+            .navigationBarsPadding(),
         topBar = {
             Box(
                 modifier = Modifier
@@ -124,14 +127,20 @@ fun AppNavigation(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 androidx.compose.material3.SearchBar(
-                    query = searchQuery,
-                    onQueryChange = { mainViewModel.updateSearchQuery(it) },
-                    onSearch = { },
-                    active = false,
-                    onActiveChange = { },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text(searchHint) },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") }
+                    inputField = {
+                        androidx.compose.material3.SearchBarDefaults.InputField(
+                            query = searchQuery,
+                            onQueryChange = { mainViewModel.updateSearchQuery(it) },
+                            onSearch = { },
+                            expanded = false,
+                            onExpandedChange = { },
+                            placeholder = { Text(searchHint) },
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") }
+                        )
+                    },
+                    expanded = false,
+                    onExpandedChange = { },
+                    modifier = Modifier.fillMaxWidth()
                 ) {}
             }
         },

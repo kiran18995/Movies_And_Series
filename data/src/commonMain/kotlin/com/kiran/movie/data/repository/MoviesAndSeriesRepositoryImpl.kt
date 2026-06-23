@@ -95,7 +95,24 @@ class MoviesAndSeriesRepositoryImpl(
                 .getUpcomingMoviesByLanguage(language, today, page)
                 .results
                 .map { it.apply { isMovie = true } }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println("getUpcomingMoviesByLanguage error: ${e.message}")
+            e.printStackTrace()
+            emptyList()
+        }
+
+    override suspend fun discoverMoviesList(
+        language: String?,
+        sortBy: String,
+        page: Int
+    ): List<Item> =
+        try {
+            moviesAndSeriesApi.discoverMovies(language, sortBy, page)
+                .results
+                .map { it.apply { isMovie = true } }
+        } catch (e: Exception) {
+            println("discoverMoviesList error: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
 
@@ -104,7 +121,9 @@ class MoviesAndSeriesRepositoryImpl(
             moviesAndSeriesApi.getMoviesByCategory(category, page)
                 .results
                 .map { it.apply { isMovie = true } }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println("getMoviesList error: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
 
@@ -113,7 +132,31 @@ class MoviesAndSeriesRepositoryImpl(
             moviesAndSeriesApi.getTvShowsByCategory(category, page)
                 .results
                 .map { it.apply { isMovie = false } }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println("getTvShowsList error: ${e.message}")
+            e.printStackTrace()
+            emptyList()
+        }
+
+    override suspend fun searchMoviesList(query: String, page: Int): List<Item> =
+        try {
+            moviesAndSeriesApi.searchMovies(query, page)
+                .results
+                .map { it.apply { isMovie = true } }
+        } catch (e: Exception) {
+            println("searchMoviesList error: ${e.message}")
+            e.printStackTrace()
+            emptyList()
+        }
+
+    override suspend fun searchTvShowsList(query: String, page: Int): List<Item> =
+        try {
+            moviesAndSeriesApi.searchTvShows(query, page)
+                .results
+                .map { it.apply { isMovie = false } }
+        } catch (e: Exception) {
+            println("searchTvShowsList error: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
 }

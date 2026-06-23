@@ -9,12 +9,14 @@ import com.kiran.movie.domain.usecase.GetAllBookmarksUseCase
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
 import com.kiran.movie.domain.usecase.GetItemDetailsUseCase
 import com.kiran.movie.domain.usecase.GetMoviesListUseCase
+import com.kiran.movie.domain.usecase.DiscoverMoviesListUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
 import com.kiran.movie.domain.usecase.GetTvShowsListUseCase
 import com.kiran.movie.domain.usecase.GetTvShowsUseCase
 import com.kiran.movie.domain.usecase.GetUpcomingMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import io.ktor.client.HttpClient
+import io.ktor.http.isSuccess
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
@@ -73,9 +75,23 @@ fun iosNetworkModule(apiToken: String) = module {
                     }
                 }
             }
+            install(io.ktor.client.plugins.HttpTimeout) {
+                requestTimeoutMillis = 60000
+                connectTimeoutMillis = 60000
+                socketTimeoutMillis = 60000
+            }
+            install(io.ktor.client.plugins.HttpRequestRetry) {
+                retryOnExceptionOrServerErrors(maxRetries = 3)
+                exponentialDelay()
+                retryIf { request, response ->
+                    !response.status.isSuccess() && (response.status.value == 429 || response.status.value >= 500)
+                }
+            }
             defaultRequest {
                 url(BASE_URL)
                 header(AUTHORIZATION, "$BEARER $apiToken")
+                header(io.ktor.http.HttpHeaders.Accept, "application/json")
+                header(io.ktor.http.HttpHeaders.UserAgent, "MoviesApp/1.0 (iOS; Kotlin Multiplatform)")
             }
         }
     }
@@ -91,6 +107,7 @@ val sharedModule = module {
     single<MoviesAndSeriesRepository> { MoviesAndSeriesRepositoryImpl(get(), get()) }
 
     factoryOf(::GetMoviesListUseCase)
+    factoryOf(::DiscoverMoviesListUseCase)
     factoryOf(::GetTvShowsListUseCase)
     factoryOf(::GetUpcomingMoviesUseCase)
     factoryOf(::GetItemDetailsUseCase)
@@ -109,6 +126,7 @@ object KoinHelper {
     }
 
     fun getGetMoviesListUseCase(): GetMoviesListUseCase = koinApp.koin.get()
+    fun getDiscoverMoviesListUseCase(): DiscoverMoviesListUseCase = koinApp.koin.get()
     fun getGetTvShowsListUseCase(): GetTvShowsListUseCase = koinApp.koin.get()
     fun getGetUpcomingMoviesUseCase(): GetUpcomingMoviesUseCase = koinApp.koin.get()
     fun getGetItemDetailsUseCase(): GetItemDetailsUseCase = koinApp.koin.get()

@@ -15,6 +15,8 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import java.io.ByteArrayInputStream
 
 /**
@@ -84,6 +86,12 @@ class MovieWebViewActivity : ComponentActivity() {
         root = FrameLayout(this)
         setContentView(root)
 
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
         webView = WebView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -132,70 +140,163 @@ class MovieWebViewActivity : ComponentActivity() {
                     return false
                 }
             }
-
-            // ── Chrome client for media + fullscreen ─────────────────────────
-            val client = object : WebChromeClient() {
-
-                override fun onPermissionRequest(request: PermissionRequest) {
-                    request.grant(request.resources)
-                }
-
-                override fun onShowCustomView(
-                    view: View,
-                    callback: CustomViewCallback,
-                ) {
-                    // If a custom view is already showing, dismiss it first
-                    if (customView != null) {
-                        callback.onCustomViewHidden()
-                        return
-                    }
-                    customView = view
-                    customViewCallback = callback
-
-                    // Add fullscreen view on top of everything
-                    root.addView(
-                        view,
-                        FrameLayout.LayoutParams(
-                            FrameLayout.LayoutParams.MATCH_PARENT,
-                            FrameLayout.LayoutParams.MATCH_PARENT,
-                        ),
-                    )
-
-                    // Hide system bars for true immersive fullscreen
-                    enterImmersive()
-                }
-
-                override fun onHideCustomView() {
-                    customView?.let { root.removeView(it) }
-                    customView = null
-                    customViewCallback?.onCustomViewHidden()
-                    customViewCallback = null
-                    exitImmersive()
-                }
-
-                override fun onConsoleMessage(
-                    consoleMessage: android.webkit.ConsoleMessage,
-                ): Boolean = true // suppress console noise
-            }
-            chromeClient = client
-            webChromeClient = client
-
-            loadUrl(url)
         }
 
-        root.addView(webView)
-
-        // Back press: go back in WebView history, or exit fullscreen, or finish
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                when {
-                    customView != null -> chromeClient?.onHideCustomView()
-                    webView.canGoBack() -> webView.goBack()
-                    else -> finish()
+        // ── Native Center Play/Pause Button Overlay ───────────────────────
+        val playPauseBtn = android.widget.ImageButton(this).apply {
+            layoutParams = FrameLayout.LayoutParams(200, 200).apply {
+                gravity = android.view.Gravity.CENTER
+            }
+            setImageResource(android.R.drawable.ic_media_play)
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.OVAL
+                setColor(android.graphics.Color.parseColor("#99000000"))
+            }
+            imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
+            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            setPadding(48, 48, 48, 48)
+            elevation = 16f
+            alpha = 0f
+            isClickable = false
+            
+            setOnClickListener {
+                animate().cancel()
+                alpha = 1f
+                webView.evaluateJavascript(
+                    """
+                    (function() {
+                        var v = document.querySelector('video');
+                        if(v) {
+                            if(v.paused) v.play();
+                            else v.pause();
+                            return v.paused.toString();
+                        }
+                        return "null";
+                    })();
+                    """.trimIndent()
+                ) { result ->
+                    if (result == "\"false\"" || result == "false") {
+                        setImageResource(android.R.drawable.ic_media_pause)
+                        animate().alpha(0f).setStartDelay(1500).setDuration(500)
+                            .withEndAction { isClickable = false }.start()
+                    } else {
+                        setImageResource(android.R.drawable.ic_media_play)
+                        isClickable = true
+                    }
                 }
             }
-        })
-    }
+        }
+
+        val updateStateRunnable = object : Runnable {
+            override fun run() {
+                webView.evaluateJavascript(
+                    "document.querySelector('video') ? document.querySelector('video').paused.toString() : 'null'"
+                ) { result ->
+                    if (result == "\"true\"" || result == "true") {
+                        playPauseBtn.setImageResource(android.R.drawable.ic_media_play)
+                        playPauseBtn.animate().cancel()
+                        playPauseBtn.alpha = 1f
+                        playPauseBtn.isClickable = true
+                    } else if (result == "\"false\"" || result == "false") {
+                        playPauseBtn.setImageResource(android.R.drawable.ic_media_pause)
+                    }
+                }
+                playPauseBtn.postDelayed(this, 1000)
+            }
+        }
+        playPauseBtn.post(updateStateRunnable)
+
+        @SuppressLint("ClickableViewAccessibility")
+        val touchListener = android.view.View.OnTouchListener { _, event ->
+            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                if (playPauseBtn.alpha == 0f) {
+                    playPauseBtn.animate().cancel()
+                    playPauseBtn.alpha = 1f
+                    playPauseBtn.isClickable = true
+                    
+                    webView.evaluateJavascript("document.querySelector('video') ? document.querySelector('video').paused.toString() : 'null'") { res ->
+                        if (res == "\"false\"" || res == "false") {
+                            playPauseBtn.animate()
+                                .alpha(0f)
+                                .setStartDelay(2500)
+                                .setDuration(300)
+                                .withEndAction { playPauseBtn.isClickable = false }
+                                .start()
+                        }
+                    }
+                }
+            }
+            false
+        }
+        
+        webView.setOnTouchListener(touchListener)
+
+        // ── Chrome client for media + fullscreen ─────────────────────────
+        val client = object : WebChromeClient() {
+
+            override fun onPermissionRequest(request: PermissionRequest) {
+                request.grant(request.resources)
+            }
+
+            @SuppressLint("ClickableViewAccessibility")
+            override fun onShowCustomView(
+                view: View,
+                callback: CustomViewCallback,
+            ) {
+                // If a custom view is already showing, dismiss it first
+                if (customView != null) {
+                    callback.onCustomViewHidden()
+                    return
+                }
+                customView = view
+                customViewCallback = callback
+
+                // Add fullscreen view on top of everything
+                root.addView(
+                    view,
+                    FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                    ),
+                )
+                view.setOnTouchListener(touchListener)
+                root.bringChildToFront(playPauseBtn)
+
+                // Hide system bars for true immersive fullscreen
+                enterImmersive()
+            }
+
+            override fun onHideCustomView() {
+                customView?.let { root.removeView(it) }
+                customView = null
+                customViewCallback?.onCustomViewHidden()
+                customViewCallback = null
+                exitImmersive()
+            }
+
+            override fun onConsoleMessage(
+                consoleMessage: android.webkit.ConsoleMessage,
+            ): Boolean = true // suppress console noise
+        }
+        chromeClient = client
+        webView.webChromeClient = client
+
+        webView.loadUrl(url)
+
+    root.addView(webView)
+    root.addView(playPauseBtn)
+
+    // Back press: go back in WebView history, or exit fullscreen, or finish
+    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            when {
+                customView != null -> chromeClient?.onHideCustomView()
+                webView.canGoBack() -> webView.goBack()
+                else -> finish()
+            }
+        }
+    })
+}
 
     @Suppress("DEPRECATION")
     private fun enterImmersive() {

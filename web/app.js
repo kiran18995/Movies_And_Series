@@ -70,12 +70,25 @@ function toggleBookmark(item) {
 }
 
 // ── API HELPERS ───────────────────────────────────────────────────────────
-async function apiFetch(path, params = {}) {
+async function apiFetch(path, params = {}, retries = 3) {
   const url = new URL(`${BASE_URL}${path}`);
   Object.entries(params).forEach(([k, v]) => { if (v !== '' && v != null) url.searchParams.set(k, v); });
-  const res = await fetch(url, { headers: HEADERS });
-  if (!res.ok) throw new Error(`API error ${res.status}`);
-  return res.json();
+  
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, { headers: HEADERS });
+      if (res.ok) return await res.json();
+      
+      if (res.status === 429 || res.status >= 500) {
+        if (i === retries) throw new Error(`API error ${res.status}`);
+      } else {
+        throw new Error(`API error ${res.status}`);
+      }
+    } catch (e) {
+      if (i === retries) throw e;
+    }
+    await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
+  }
 }
 
 // ── GENRES ────────────────────────────────────────────────────────────────

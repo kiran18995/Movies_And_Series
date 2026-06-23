@@ -31,6 +31,7 @@ struct DetailView: View {
     @StateObject private var state = DetailViewModelState()
     @State private var isLoading = false
     @State private var showingPlayer = false
+    @State private var isVideoLoading = true
     @State private var selectedSeason: Int32 = 1
     @State private var selectedEpisode: Int32 = 1
     @Environment(\.dismiss) private var dismiss
@@ -162,9 +163,44 @@ struct DetailView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .fullScreenCover(isPresented: $showingPlayer) {
-                    if let url = URL(string: item.isMovie ? "https://streamimdb.ru/embed/movie/\(item.id)" : "https://streamimdb.ru/embed/tv/\(item.id)/\(selectedSeason)/\(selectedEpisode)") {
-                        SafariView(url: url)
-                            .ignoresSafeArea()
+                    let streamPath = item.isMovie ? "/embed/movie/\(item.id)" : "/embed/tv/\(item.id)/\(selectedSeason)/\(selectedEpisode)"
+                    if let url = URL(string: "https://streamimdb.ru" + streamPath) {
+                        ZStack(alignment: .topLeading) {
+                            MovieWebView(url: url, isLoading: $isVideoLoading)
+                                .ignoresSafeArea()
+                            
+                            Button(action: { showingPlayer = false }) {
+                                Image(systemName: "xmark")
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                    .padding(12)
+                                    .background(.ultraThinMaterial)
+                                    .clipShape(Circle())
+                            }
+                            .padding(.leading, 20)
+                            .padding(.top, 16)
+                            
+                            if isVideoLoading {
+                                ZStack {
+                                    Color.black.ignoresSafeArea()
+                                    VStack(spacing: 16) {
+                                        ProgressView()
+                                            .scaleEffect(1.5)
+                                            .tint(.white)
+                                        Text("Loading...")
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                            }
+                        }
+                        .onAppear {
+                            isVideoLoading = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                                isVideoLoading = false
+                            }
+                        }
                     }
                 }
                 
@@ -212,6 +248,41 @@ struct DetailView: View {
                         HStack(spacing: 12) {
                             ForEach(cast.prefix(10), id: \.name) { member in
                                 CastCard(cast: member)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                    }
+                }
+                
+                // Trailers
+                if let videos = state.details?.videos?.results?.filter({ $0.site == "YouTube" && $0.type == "Trailer" }), !videos.isEmpty {
+                    Text("Trailers")
+                        .font(.headline)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(videos, id: \.key) { video in
+                                if let url = URL(string: "https://www.youtube.com/watch?v=\(video.key)") {
+                                    Link(destination: url) {
+                                        ZStack {
+                                            AsyncImage(url: URL(string: "https://img.youtube.com/vi/\(video.key)/hqdefault.jpg")) { image in
+                                                image.resizable().aspectRatio(16/9, contentMode: .fill)
+                                            } placeholder: {
+                                                Rectangle().fill(Color.gray.opacity(0.3)).aspectRatio(16/9, contentMode: .fit)
+                                            }
+                                            .frame(width: 200, height: 112)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                            
+                                            Image(systemName: "play.circle.fill")
+                                                .font(.largeTitle)
+                                                .foregroundColor(.white)
+                                                .shadow(radius: 4)
+                                        }
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal, 16)
@@ -306,13 +377,184 @@ struct CastCard: View {
 
 extension Item: @retroactive Identifiable {}
 
-struct SafariView: UIViewControllerRepresentable {
-    let url: URL
+import WebKit
 
-    func makeUIViewController(context: Context) -> SFSafariViewController {
-        return SFSafariViewController(url: url)
+// ── SafariPlayerView ──────────────────────────────────────────────────────
+// Uses the real Safari engine (SFSafariViewController) which has full MSE/HLS
+// video support. streamimdb.ru cannot detect it as a restricted WebView,
+// so the working desktop-quality player is served consistently.
+struct SafariPlayerView: UIViewControllerRepresentable {
+    let url: URL
+    let onDismiss: () -> Void
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        let config = SFSafariViewController.Configuration()
+        config.entersReaderIfAvailable = false
+        config.barCollapsingEnabled = true
+
+        let safari = SFSafariViewController(url: url, configuration: config)
+        safari.preferredBarTintColor = .black
+        safari.preferredControlTintColor = .white
+        safari.dismissButtonStyle = .close
+        safari.delegate = context.coordinator
+        return safari
     }
 
-    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    class Coordinator: NSObject, SFSafariViewControllerDelegate {
+        let parent: SafariPlayerView
+        init(_ parent: SafariPlayerView) { self.parent = parent }
+        func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+            parent.onDismiss()
+        }
+    }
+}
+
+struct MovieWebView: UIViewRepresentable {
+    let url: URL
+    @Binding var isLoading: Bool
+    @Environment(\.presentationMode) var presentationMode
+    
+    func makeUIView(context: Context) -> WKWebView {
+        let prefs = WKWebpagePreferences()
+        prefs.allowsContentJavaScript = true
+        
+        let config = WKWebViewConfiguration()
+        // FALSE = let iOS use native AVPlayer fullscreen for video (like YouTube/Netflix)
+        // TRUE  = inline playback in the web view → black screen on many streams
+        config.allowsInlineMediaPlayback = false
+        config.mediaTypesRequiringUserActionForPlayback = []
+        config.defaultWebpagePreferences = prefs
+        
+        // Ad-blocking JS: nuke common ad overlay elements and block popup windows
+        let jsString = """
+        // Remove common ad overlay elements
+        setInterval(function() {
+            ['[class*="ad-"]','[id*="ad-"]','[class*="popup"]','[id*="popup"]',
+             '[class*="overlay"]','[class*="banner"]','iframe[src*="ad"]'].forEach(function(sel) {
+                document.querySelectorAll(sel).forEach(function(el) {
+                    if (!el.querySelector('video')) el.remove();
+                });
+            });
+        }, 1000);
+        """
+        let script = WKUserScript(source: jsString, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+        let userContentController = WKUserContentController()
+        userContentController.addUserScript(script)
+        config.userContentController = userContentController
+        
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
+        webView.isOpaque = false                              // ← transparent during load = no white flash
+        webView.backgroundColor = .black
+        webView.scrollView.backgroundColor = .black
+        webView.scrollView.contentInsetAdjustmentBehavior = .never  // ← prevents layout jumps after video dismiss
+        
+        // Spoof as Android Chrome — streamimdb.ru detects iOS Safari and serves broken player
+        webView.customUserAgent = "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        
+        var request = URLRequest(url: url)
+        request.setValue("https://streamimdb.ru/", forHTTPHeaderField: "Referer")
+        webView.load(request)
+        
+        // Fallback: hide loading screen after 5 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            self.isLoading = false
+        }
+        
+        return webView
+    }
+    
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        context.coordinator.parent = self
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+        var parent: MovieWebView
+        
+        let adHosts: Set<String> = [
+            "doubleclick.net", "googlesyndication.com", "googleadservices.com",
+            "adservice.google.com", "adservice.google.co.in",
+            "pagead2.googlesyndication.com", "tpc.googlesyndication.com",
+            "ads.pubmatic.com", "simage2.pubmatic.com",
+            "secure.adnxs.com", "ib.adnxs.com",
+            "prebid.io", "prebid.org",
+            "taboola.com", "trc.taboola.com",
+            "outbrain.com", "widgets.outbrain.com",
+            "amazon-adsystem.com", "aax.amazon-adsystem.com",
+            "criteo.com", "static.criteo.net",
+            "advertising.com", "adtech.com",
+            "rubiconproject.com", "ads.rubiconproject.com",
+            "openx.net", "openx.com",
+            "moatads.com", "z.moatads.com",
+            "casalemedia.com", "scdn.cxense.com",
+            "ads.yahoo.com", "media.net",
+            "scorecardresearch.com",
+            "cdn.admanager.com", "ads.exoclick.com", "adx.ads.exoclick.com",
+            "popads.net", "popcash.net", "trafficjunky.net",
+            "traffichaus.com", "trafficfactory.biz",
+            "propellerads.com", "admaven.com",
+            "revcontent.com", "adtelligent.com"
+        ]
+        
+        init(_ parent: MovieWebView) {
+            self.parent = parent
+        }
+        
+        private func shouldBlock(url: URL?) -> Bool {
+            guard let host = url?.host?.lowercased() else { return false }
+            return adHosts.contains { host == $0 || host.hasSuffix(".\($0)") }
+        }
+        
+        // Block navigation to ad hosts
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if shouldBlock(url: navigationAction.request.url) {
+                decisionHandler(.cancel)
+                return
+            }
+            
+            // Block external link activations (ad pop-ups), allow everything else
+            if navigationAction.navigationType == .linkActivated {
+                let host = navigationAction.request.url?.host ?? ""
+                if !host.contains("lhr.life") && !host.contains("streamimdb.ru") {
+                    decisionHandler(.cancel)
+                    return
+                }
+            }
+            
+            decisionHandler(.allow)
+        }
+        
+        // Prevent popup windows (extremely common on streaming sites)
+        func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+            // Never open new tabs/windows for popups
+            return nil
+        }
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            DispatchQueue.main.async {
+                self.parent.isLoading = false
+            }
+        }
+        
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            DispatchQueue.main.async {
+                self.parent.isLoading = false
+            }
+        }
+        
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            DispatchQueue.main.async {
+                self.parent.isLoading = false
+            }
+        }
     }
 }

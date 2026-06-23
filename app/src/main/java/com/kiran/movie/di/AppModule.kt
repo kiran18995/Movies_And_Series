@@ -23,6 +23,7 @@ import com.kiran.movie.core.ui.MainViewModel
 import com.kiran.movie.core.ui.details.ItemDetailsViewModel
 import com.kiran.movie.db.getRoomDatabase
 import io.ktor.client.HttpClient
+import io.ktor.http.isSuccess
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -61,9 +62,23 @@ val appModule = module {
                     }
                 }
             }
+            install(io.ktor.client.plugins.HttpTimeout) {
+                requestTimeoutMillis = 15000
+                connectTimeoutMillis = 15000
+                socketTimeoutMillis = 15000
+            }
+            install(io.ktor.client.plugins.HttpRequestRetry) {
+                retryOnExceptionOrServerErrors(maxRetries = 3)
+                exponentialDelay()
+                retryIf { request, response ->
+                    !response.status.isSuccess() && (response.status.value == 429 || response.status.value >= 500)
+                }
+            }
             defaultRequest {
                 url(BuildConfig.BASE_URL)
                 header(AUTHORIZATION, "$BEARER $AUTHORIZATION_TOKEN")
+                header(io.ktor.http.HttpHeaders.Accept, "application/json")
+                header(io.ktor.http.HttpHeaders.UserAgent, "MoviesApp/1.0 (Android; Kotlin Multiplatform)")
             }
         }
     }

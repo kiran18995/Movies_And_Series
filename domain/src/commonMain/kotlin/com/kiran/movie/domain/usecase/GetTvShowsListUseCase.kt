@@ -7,5 +7,10 @@ class GetTvShowsListUseCase(private val repository: MoviesAndSeriesRepository) {
     suspend operator fun invoke(
         category: String = "popular",
         page: Int = 1,
-    ): List<Item> = repository.getTvShowsList(category, page)
+        query: String = ""
+    ): List<Item> = if (query.isEmpty()) {
+        repository.getTvShowsList(category, page)
+    } else {
+        repository.searchTvShowsList(query, page)
+    }
 }

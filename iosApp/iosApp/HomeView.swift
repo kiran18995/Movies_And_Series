@@ -1,117 +1,218 @@
 import SwiftUI
 import shared
 
-// MARK: - Lightweight observable wrapper
+enum MovieLanguage: String, CaseIterable {
+    case english = "en"
+    case hindi = "hi"
+    case kannada = "kn"
+    case telugu = "te"
+    case tamil = "ta"
+    case malayalam = "ml"
 
-final class HomeViewModelState: ObservableObject {
-    @Published var movies: [Item] = []
-    @Published var tvShows: [Item] = []
-    @Published var upcoming: [Item] = []
-    @Published var isLoading: Bool = false
-    
-    private let vm: HomeViewModel
-    
-    init() {
-        let moviesUseCase = KoinHelper.shared.getGetMoviesListUseCase()
-        let tvUseCase = KoinHelper.shared.getGetTvShowsListUseCase()
-        let upcomingUseCase = KoinHelper.shared.getGetUpcomingMoviesUseCase()
-        self.vm = HomeViewModel(
-            getMoviesListUseCase: moviesUseCase,
-            getTvShowsListUseCase: tvUseCase,
-            getUpcomingMoviesUseCase: upcomingUseCase
-        )
-        startObserving()
-    }
-    
-    deinit { vm.dispose() }
-    
-    private func startObserving() {
-        FlowCollector.collect(flow: vm.movies) { [weak self] (items: Any) in
-            self?.movies = items as! [Item]
-        }
-        FlowCollector.collect(flow: vm.tvShows) { [weak self] (items: Any) in
-            self?.tvShows = items as! [Item]
-        }
-        FlowCollector.collect(flow: vm.upcomingMovies) { [weak self] (items: Any) in
-            self?.upcoming = items as! [Item]
-        }
-        FlowCollector.collect(flow: vm.isLoading) { [weak self] (loading: Any) in
-            self?.isLoading = loading as! Bool
+    var displayName: String {
+        switch self {
+        case .english: return "English"
+        case .hindi: return "Hindi"
+        case .kannada: return "Kannada"
+        case .telugu: return "Telugu"
+        case .tamil: return "Tamil"
+        case .malayalam: return "Malayalam"
         }
     }
     
-    func refresh() { vm.load() }
+    var code: String { self.rawValue }
 }
 
-// MARK: - Home View
+enum MovieSortOrder: String, CaseIterable {
+    case popular = "popularity.desc"
+    case topRated = "vote_average.desc"
+    case newToOld = "primary_release_date.desc"
+    case oldToNew = "primary_release_date.asc"
+
+    var displayName: String {
+        switch self {
+        case .popular: return "Popular"
+        case .topRated: return "Top Rated"
+        case .newToOld: return "New to Old"
+        case .oldToNew: return "Old to New"
+        }
+    }
+    
+    var value: String { self.rawValue }
+}
+
+// MARK: - Home View (Movies)
 
 struct HomeView: View {
-    @StateObject private var state = HomeViewModelState()
+    @State private var movies: [Item] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String? = nil
     @State private var selectedItem: Item? = nil
+    
+    @State private var currentPage: Int32 = 1
+    @State private var isLoadingMore = false
+    
+    // Filters
+    @State private var selectedLanguage: MovieLanguage = .english
+    @State private var selectedSortOrder: MovieSortOrder = .popular
+    
+    private let useCase: DiscoverMoviesListUseCase = KoinHelper.shared.getDiscoverMoviesListUseCase()
     
     var body: some View {
         NavigationStack {
             Group {
-                if state.isLoading && state.movies.isEmpty {
+                if let errorMessage = errorMessage {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 48))
+                            .foregroundColor(.red)
+                        Text("Error Loading Movies")
+                            .font(.headline)
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        Button("Retry") {
+                            Task { await loadMovies(reset: true) }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if isLoading && movies.isEmpty {
                     ProgressView("Loading…")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 0) {
-                            if !state.upcoming.isEmpty {
-                                sectionHeader("Upcoming Movies")
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 12) {
-                                        ForEach(state.upcoming, id: \.id) { item in
-                                            PosterCard(item: item)
-                                                .onTapGesture { selectedItem = item }
-                                        }
-                                    }
-                                    .padding(.horizontal, 16)
-                                }
-                                .padding(.bottom, 16)
-                            }
-                            
-                            sectionHeader("Popular Movies")
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 12) {
-                                    ForEach(state.movies, id: \.id) { item in
-                                        PosterCard(item: item)
-                                            .onTapGesture { selectedItem = item }
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                            }
-                            .padding(.bottom, 16)
-                            
-                            sectionHeader("Popular TV Shows")
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 12) {
-                                    ForEach(state.tvShows, id: \.id) { item in
-                                        PosterCard(item: item)
-                                            .onTapGesture { selectedItem = item }
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                            }
-                            .padding(.bottom, 24)
-                        }
-                    }
-                    .refreshable { state.refresh() }
+                    moviesGrid
                 }
             }
-            .navigationTitle("Discover")
+            .navigationTitle("Movies")
             .navigationDestination(item: $selectedItem) { item in
                 DetailView(item: item)
+            }
+            .onAppear { Task { await loadMovies(reset: true) } }
+            .onChange(of: selectedLanguage) { _ in
+                Task { await loadMovies(reset: true) }
+            }
+            .onChange(of: selectedSortOrder) { _ in
+                Task { await loadMovies(reset: true) }
             }
         }
     }
     
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.headline)
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 8)
+    private var moviesGrid: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                // Filters Header
+                filterSection
+                    .padding(.bottom, 16)
+                
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 110), spacing: 12)],
+                    spacing: 16
+                ) {
+                    ForEach(movies, id: \.id) { item in
+                        PosterCard(item: item)
+                            .onTapGesture { selectedItem = item }
+                            .onAppear {
+                                if item.id == movies.last?.id {
+                                    Task { await loadMovies() }
+                                }
+                            }
+                    }
+                    
+                    if isLoadingMore {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 80)
+            }
+        }
+    }
+    
+    private var filterSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Language Chips
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(MovieLanguage.allCases, id: \.self) { language in
+                        filterChip(
+                            title: language.displayName,
+                            isSelected: selectedLanguage == language,
+                            selectedColor: .red
+                        ) {
+                            selectedLanguage = language
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+            
+            // Sort Order Chips
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(MovieSortOrder.allCases, id: \.self) { sort in
+                        filterChip(
+                            title: sort.displayName,
+                            isSelected: selectedSortOrder == sort,
+                            selectedColor: .gray
+                        ) {
+                            selectedSortOrder = sort
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .padding(.top, 8)
+    }
+    
+    private func filterChip(title: String, isSelected: Bool, selectedColor: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.footnote)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(isSelected ? selectedColor : Color(UIColor.systemGray5))
+                .foregroundColor(isSelected ? .white : .primary)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+    
+    @MainActor
+    private func loadMovies(reset: Bool = false) async {
+        if reset {
+            currentPage = 1
+            if movies.isEmpty { isLoading = true }
+        } else {
+            guard !isLoading && !isLoadingMore else { return }
+            isLoadingMore = true
+            currentPage += 1
+        }
+        
+        do {
+            let newItems = try await useCase.invoke(
+                language: selectedLanguage.code,
+                sortBy: selectedSortOrder.value,
+                page: currentPage,
+                query: ""
+            )
+            if reset {
+                self.movies = newItems
+            } else {
+                self.movies.append(contentsOf: newItems)
+            }
+            self.errorMessage = nil
+        } catch {
+            print("Failed to load movies: \(error)")
+            self.errorMessage = "\(error)"
+        }
+        
+        isLoading = false
+        isLoadingMore = false
     }
 }

@@ -9,8 +9,11 @@ interface MoviesAndSeriesRepository {
     fun getMovies(query: String, language: String?, sortBy: String): Flow<PagingData<Item>>
     fun getTvShows(query: String, category: String): Flow<PagingData<Item>>
     suspend fun getUpcomingMoviesByLanguage(language: String?, page: Int): List<Item>
+    suspend fun discoverMoviesList(language: String?, sortBy: String, page: Int): List<Item>
     suspend fun getMoviesList(category: String?, page: Int): List<Item>
     suspend fun getTvShowsList(category: String, page: Int): List<Item>
+    suspend fun searchMoviesList(query: String, page: Int): List<Item>
+    suspend fun searchTvShowsList(query: String, page: Int): List<Item>
     suspend fun isBookmarked(itemId: Int): Boolean
     suspend fun toggleBookmark(item: Item)
     suspend fun getBookmarkedIds(): List<Int>
