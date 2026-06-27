@@ -1,15 +1,17 @@
 <p align="center">
   <h1 align="center">🎬 Movies & Series</h1>
   <p align="center">
-    A modern Android application for browsing popular movies and TV shows, powered by <a href="https://www.themoviedb.org/">TMDB API</a>.
-    <br />Built with <b>Jetpack Compose</b>, <b>Multi-Module Architecture</b>, and <b>MVI Pattern</b>.
+    A cross-platform app for browsing popular movies and TV shows, powered by <a href="https://www.themoviedb.org/">TMDB API</a>.
+    <br />Built with <b>Kotlin Multiplatform</b>, targeting <b>Android</b>, <b>iOS</b>, and <b>Web</b>.
   </p>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Kotlin-2.0.10-7F52FF?logo=kotlin&logoColor=white" />
+  <img src="https://img.shields.io/badge/KMP-Multiplatform-7F52FF?logo=kotlin&logoColor=white" />
   <img src="https://img.shields.io/badge/Jetpack_Compose-Material3-4285F4?logo=jetpackcompose&logoColor=white" />
-  <img src="https://img.shields.io/badge/Hilt-2.51-2196F3?logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/SwiftUI-iOS-000000?logo=swift&logoColor=white" />
+  <img src="https://img.shields.io/badge/Node.js-Web-339933?logo=nodedotjs&logoColor=white" />
   <img src="https://img.shields.io/badge/API-24%2B-brightgreen" />
   <img src="https://img.shields.io/badge/License-Apache_2.0-blue" />
 </p>
@@ -32,134 +34,178 @@
 
 ## ✨ Features
 
-- 🎥 **Browse Popular Movies** — Discover trending and popular movies with infinite scroll pagination
-- 📺 **Browse Popular TV Shows** — Explore popular TV series with the same seamless experience
-- 🔍 **Debounced Search** — Search movies and TV shows with a 300ms debounce to minimize API calls
-- 🔖 **Bookmark / Save** — Bookmark your favorite movies and TV shows for quick access offline
-- 📂 **Saved Collection** — View all bookmarked items, filtered by Movies or TV Shows tabs
-- 🎨 **Material 3 Design** — Modern Material Design 3 with Material You theming
-- 📱 **Edge-to-Edge UI** — Immersive experience with auto-hiding search bar and navigation bar on scroll
-- 🏗️ **Multi-Module Architecture** — Clean separation of concerns with a scalable module structure
-- ⚡ **Offline-First Bookmarks** — Bookmarks are persisted locally using Room with atomic transactions
+### Cross-Platform
+- 📱 **Android** — Jetpack Compose + Material 3 + Hilt + Paging 3
+- 🍎 **iOS** — SwiftUI consuming shared Kotlin business logic via `.framework`
+- 🌐 **Web** — Vanilla JS frontend with Node.js/Express proxy server
+
+### Shared (Android + iOS)
+- 🎥 **Browse Popular Movies** — Trending and popular movies
+- 📺 **Browse Popular TV Shows** — Popular TV series
+- 🔍 **Search** — Search movies and TV shows
+- 🔖 **Bookmark / Save** — Bookmark favorites, persisted locally via Room KMP
+- 📂 **Saved Collection** — View all bookmarks
+- ⚡ **Offline-First Bookmarks** — Room KMP with bundled SQLite driver (Android + iOS)
+- 🔗 **Shared Use Cases** — All business logic lives in `commonMain` (Kotlin)
+
+### Android Specific
+- 🎨 **Material 3 Design** — Material You theming
+- 📱 **Edge-to-Edge UI** — Auto-hiding search bar and bottom nav on scroll
+- ♾️ **Infinite Scroll** — Paging 3 with Compose integration
 - 🧪 **Unit Tested** — ViewModel logic tested with MockK and Coroutines Test
+
+### Web Specific
+- 🔒 **Server-Side TMDB Token** — API key never exposed to the browser
+- 🎬 **Streaming Embed** — Built-in stream proxy with iframe rewriting
 
 ---
 
 ## 🏛️ Architecture
 
-The app follows **Clean Architecture** principles with a **multi-module** structure and the **MVI (Model-View-Intent)** pattern for unidirectional data flow.
+The app follows **Clean Architecture** with a **KMP multi-module** structure. Android uses the **MVI** pattern; iOS consumes shared ViewModels via `StateFlow`; the web is an independent JS frontend.
 
-### Module Graph
+### KMP Module Graph
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                        :app                         │
-│           (Navigation, DI, MainActivity)            │
-└──────┬──────────────┬──────────────┬────────────────┘
-       │              │              │
-       ▼              ▼              ▼
- ┌───────────┐ ┌────────────┐ ┌───────────┐
- │ :feature: │ │ :feature:  │ │ :feature: │
- │  movies   │ │  tvshows   │ │   saved   │
- └─────┬─────┘ └─────┬──────┘ └─────┬─────┘
-       │              │              │
-       └──────────────┼──────────────┘
-                      │
-              ┌───────▼───────┐
-              │   :domain     │
-              │  (Use Cases)  │
-              └───────┬───────┘
-                      │
-              ┌───────▼───────┐
-              │    :data      │
-              │ (Repository)  │
-              └───────┬───────┘
-                      │
-       ┌──────────────┼──────────────┐
-       │              │              │
-       ▼              ▼              ▼
- ┌───────────┐ ┌────────────┐ ┌───────────┐
- │  :core:   │ │   :core:   │ │  :core:   │
- │  network  │ │  database  │ │    ui     │
- └───────────┘ └────────────┘ └───────────┘
-                      │
-              ┌───────▼───────┐
-              │ :core:common  │
-              └───────────────┘
+          ┌─────────────────────────────────────────┐
+          │                  :app                   │
+          │   (Android — Compose, Hilt, Navigation) │
+          └────────────────┬────────────────────────┘
+                           │
+           ┌───────────────┼───────────────┐
+           ▼               ▼               ▼
+    :feature:movies  :feature:tvshows  :feature:saved
+    (Android MVI)    (Android MVI)     (Android MVI)
+           └───────────────┼───────────────┘
+                           │
+                    ┌──────▼──────┐
+                    │   :domain   │  ← commonMain
+                    │ (Use Cases) │
+                    └──────┬──────┘
+                           │
+                    ┌──────▼──────┐
+                    │    :data    │  ← commonMain
+                    │ (Repo Impl) │
+                    └──────┬──────┘
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+       :core:network  :core:database  :core:ui
+       (commonMain)   (commonMain)   (Android)
+       Ktor client    Room KMP
+
+  ┌─────────────────────────────────┐
+  │            :shared              │  ← KMP .framework for iOS
+  │  SharedViewModels               │
+  │  IosKoinSetup + KoinHelper      │
+  │  FlowHelper (StateFlow bridge)  │
+  └─────────────────────────────────┘
+              consumed by
+  ┌─────────────────────────────────┐
+  │  iosApp/ (SwiftUI)              │
+  │  ContentView, HomeView,         │
+  │  TvShowsView, SavedView,        │
+  │  DetailView, SearchView         │
+  └─────────────────────────────────┘
+
+  web/  ← Standalone (Node.js + Vanilla JS)
 ```
 
 ### Module Responsibilities
 
-| Module | Description |
-|---|---|
-| `:app` | Entry point. Contains `MainActivity`, `AppNavigation`, Hilt setup, and scaffold with immersive scroll behavior |
-| `:feature:movies` | Movies screen UI + `MoviesViewModel` (MVI) |
-| `:feature:tvshows` | TV Shows screen UI + `TvShowsViewModel` (MVI) |
-| `:feature:saved` | Saved/Bookmarks screen UI + `SavedViewModel` (MVI) |
-| `:domain` | Business logic layer — Use Cases and repository interface |
-| `:data` | Data layer — Repository implementation coordinating network and local data sources |
-| `:core:network` | Retrofit API interface (`MoviesAndSeriesApi`), OkHttp interceptors, and network DI |
-| `:core:database` | Room database, DAOs, entities, and database DI |
-| `:core:ui` | Shared Compose components (`ItemCard`, `EmptyStateScreen`), theme, and `MainViewModel` |
-| `:core:common` | Shared utilities and constants |
+| Module | Platform | Description |
+|---|---|---|
+| `:app` | Android | `MainActivity`, `AppNavigation`, Hilt setup, immersive scroll scaffold |
+| `:feature:movies` | Android | Movies screen UI + `MoviesViewModel` (MVI) |
+| `:feature:tvshows` | Android | TV Shows screen UI + `TvShowsViewModel` (MVI) |
+| `:feature:saved` | Android | Saved/Bookmarks screen UI + `SavedViewModel` (MVI) |
+| `:domain` | commonMain | All Use Cases + `MoviesAndSeriesRepository` interface |
+| `:data` | commonMain | `MoviesAndSeriesRepositoryImpl` + `MoviesAndSeriesDataSource` |
+| `:core:network` | commonMain | `MoviesAndSeriesApi` interface + `KtorMoviesAndSeriesApi` |
+| `:core:database` | commonMain + androidMain + iosMain | Room KMP — `BookmarkDatabase`, `BookmarkDataDao`, `BookmarkEntity` |
+| `:core:ui` | Android | Compose components (`ItemCard`, `EmptyStateScreen`), theme, `MainViewModel` |
+| `:core:common` | Android | Shared utilities and constants |
+| `:shared` | commonMain + iosMain | Shared ViewModels, iOS Koin DI, `FlowHelper` for Swift interop |
+| `iosApp/` | iOS | SwiftUI app — `ContentView`, `HomeView`, `TvShowsView`, `SavedView`, `DetailView` |
+| `web/` | Web | Node.js Express server + Vanilla JS/CSS/HTML frontend |
 
-### Data Flow (MVI)
+### Data Flow
 
+**Android (MVI):**
 ```
-User Action  →  Event  →  ViewModel  →  Use Case  →  Repository  →  API / DB
-                              │
-                              ▼
-                     State (StateFlow)
-                              │
-                              ▼
-                    Compose UI re-renders
+User Action → Intent → ViewModel → Use Case → Repository → Ktor API / Room DB
+                           │
+                           ▼
+                  State (StateFlow)
+                           │
+                           ▼
+                 Compose UI re-renders
+```
+
+**iOS (StateFlow bridge):**
+```
+Swift View → KoinHelper.get<UseCase>() → SharedViewModel.load()
+                 │
+                 ▼
+        FlowHelper.collectStateFlow(vm.movies) { items in
+            self.items = items   // @State update → SwiftUI re-render
+        }
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Core
+### Shared (commonMain — Android + iOS)
 
 | Technology | Version | Purpose |
 |---|---|---|
 | **Kotlin** | 2.0.10 | Primary language |
-| **Jetpack Compose** | BOM 2024.06.00 | Declarative UI framework |
-| **Material 3** | 1.2.1 | Design system |
-| **Hilt** | 2.51.1 | Dependency injection |
-| **Coroutines + Flow** | 1.8.1 | Asynchronous programming and reactive streams |
+| **Kotlin Multiplatform** | 2.0.10 | Cross-platform compilation |
+| **Ktor** | 2.3.11 | KMP HTTP client (replaces Retrofit) |
+| **kotlinx.serialization** | 1.6.3 | JSON serialization (replaces Gson) |
+| **Room KMP** | 2.7.0-alpha11 | KMP SQLite database |
+| **sqlite-bundled** | 2.5.0-alpha11 | Bundled SQLite driver for iOS |
+| **Coroutines + StateFlow** | 1.8.1 | Async + reactive streams |
+| **Koin** | 3.5.3 | Multiplatform DI (used on iOS) |
 
-### Networking
-
-| Technology | Version | Purpose |
-|---|---|---|
-| **Retrofit** | 2.9.0 | REST API client |
-| **OkHttp** | 4.12.0 | HTTP client with logging interceptor |
-| **Gson** | 2.10.1 | JSON serialization / deserialization |
-
-### Local Persistence
+### Android
 
 | Technology | Version | Purpose |
 |---|---|---|
-| **Room** | 2.6.1 | SQLite abstraction for bookmark storage |
-| **Paging 3** | 3.3.2 | Infinite scroll pagination with Compose integration |
+| **Jetpack Compose** | BOM 2024.06.00 | Declarative Android UI |
+| **Material 3** | 1.3.1 | Design system |
+| **Hilt** | 2.51.1 | Android DI |
+| **Paging 3** | 3.3.2 | Infinite scroll pagination |
+| **Coil** | 2.6.0 | Image loading |
+| **Toasty** | 1.5.2 | Custom toasts |
+| **Shimmer** | 0.5.0 | Loading placeholders |
+| **LeakCanary** | 2.14 | Memory leak detection (debug) |
 
-### UI & Image Loading
-
-| Technology | Version | Purpose |
-|---|---|---|
-| **Coil** | 2.6.0 | Image loading with Compose support |
-| **Toasty** | 1.5.2 | Custom toast messages |
-| **Shimmer** | 0.5.0 | Loading placeholder animations |
-
-### Testing & Debugging
+### iOS
 
 | Technology | Version | Purpose |
 |---|---|---|
-| **JUnit** | 4.13.2 | Unit testing framework |
-| **MockK** | 1.13.10 | Mocking library for Kotlin |
-| **Coroutines Test** | 1.8.1 | Testing coroutines and flows |
-| **LeakCanary** | 2.14 | Memory leak detection (debug only) |
+| **SwiftUI** | — | Declarative iOS UI |
+| **shared.framework** | — | KMP compiled framework |
+| **Ktor Darwin engine** | 2.3.11 | iOS HTTP engine |
+| **Room KMP (iosMain)** | 2.7.0-alpha11 | Shared database on iOS |
+
+### Web
+
+| Technology | Version | Purpose |
+|---|---|---|
+| **Node.js + Express** | 5.x | Web server + API proxy |
+| **http-proxy-middleware** | 2.x | TMDB + stream proxy |
+| **Vanilla HTML/CSS/JS** | — | Frontend (no framework) |
+
+### Testing
+
+| Technology | Version | Purpose |
+|---|---|---|
+| **JUnit** | 4.13.2 | Unit testing |
+| **MockK** | 1.13.12 | Kotlin mocking |
+| **Coroutines Test** | 1.8.1 | Coroutine/Flow testing |
+| **Turbine** | 1.1.0 | Flow testing helper |
 
 ---
 
@@ -169,7 +215,9 @@ User Action  →  Event  →  ViewModel  →  Use Case  →  Repository  →  AP
 
 - **Android Studio** Ladybug (2024.2.1) or later
 - **JDK 17** or later
-- **Android SDK** with API 35 (compile) and API 24+ (min)
+- **Android SDK** API 35 (compile) / API 24+ (min)
+- **Xcode 15+** (for iOS)
+- **Node.js 18+** + npm (for web)
 - A **TMDB API** read access token ([get one here](https://www.themoviedb.org/settings/api))
 
 ### Setup
@@ -183,7 +231,7 @@ User Action  →  Event  →  ViewModel  →  Use Case  →  Repository  →  AP
 
 2. **Add your TMDB API token**
 
-   Open `local.properties` (gitignored — never commit this file) and add your read access token:
+   Create/open `local.properties` (gitignored — never commit this) and add:
 
    ```properties
    API_READ_ACCESS_TOKEN=your_tmdb_read_access_token_here
@@ -191,13 +239,34 @@ User Action  →  Event  →  ViewModel  →  Use Case  →  Repository  →  AP
 
    Get a free token at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api).
 
-3. **Build and run**
+### Running Android
 
+```bash
+./gradlew assembleDebug
+```
+Or open in Android Studio and press **Run ▶**.
+
+### Running iOS
+
+1. Build the shared framework:
    ```bash
-   ./gradlew assembleDebug
+   ./gradlew :shared:assembleSharedXCFramework
+   # or build from Android Studio's Gradle panel
    ```
+2. Open `iosApp/iosApp.xcodeproj` in Xcode
+3. Add your TMDB token to `Config.plist` under key `TMDB_API_TOKEN`
+4. Press **Run ▶** in Xcode
 
-   Or simply open the project in Android Studio and press **Run ▶**.
+### Running the Web App
+
+```bash
+cd web
+npm install
+node server.js
+# → http://localhost:8080
+```
+
+The server reads `API_READ_ACCESS_TOKEN` from the root `local.properties` automatically.
 
 ### Running Tests
 
@@ -211,22 +280,40 @@ User Action  →  Event  →  ViewModel  →  Use Case  →  Repository  →  AP
 
 ```
 Movies_And_Series/
-├── app/                          # Application module
-│   └── navigation/               # AppNavigation (Scaffold, NavHost, scroll behavior)
+├── app/                          # Android entry point (Compose + Hilt + Navigation)
+├── shared/                       # KMP module → compiled to .framework for iOS
+│   └── src/
+│       ├── commonMain/           # SharedViewModels, IosKoinSetup, KoinHelper, FlowHelper
+│       └── iosMain/              # (iOS-specific shared overrides if needed)
+├── domain/                       # commonMain — Use Cases + Repository interface
+├── data/                         # commonMain — Repository impl + paging DataSource
 ├── core/
-│   ├── common/                   # Shared utilities
-│   ├── database/                 # Room DB, DAOs, entities
-│   ├── network/                  # Retrofit API, interceptors, DI
-│   └── ui/                       # Shared Compose components, theme, MainViewModel
-├── data/                         # Repository implementation
-├── domain/                       # Use cases and repository interface
+│   ├── network/                  # commonMain — Ktor API (KtorMoviesAndSeriesApi)
+│   ├── database/                 # commonMain + androidMain + iosMain — Room KMP
+│   ├── ui/                       # Android — Compose components, theme, MainViewModel
+│   └── common/                   # Android — utilities and constants
 ├── feature/
-│   ├── movies/                   # Movies screen (UI + ViewModel + Contract)
-│   ├── tvshows/                  # TV Shows screen (UI + ViewModel + Contract)
-│   └── saved/                    # Saved/Bookmarks screen (UI + ViewModel + Contract)
-├── screenshots/                  # App screenshots for README
+│   ├── movies/                   # Android — Movies screen (Compose MVI)
+│   ├── tvshows/                  # Android — TV Shows screen (Compose MVI)
+│   └── saved/                    # Android — Saved/Bookmarks screen (Compose MVI)
+├── iosApp/                       # SwiftUI iOS app
+│   └── iosApp/
+│       ├── iOSApp.swift          # App entry point — initKoin + createIosRoomDatabase
+│       ├── ContentView.swift     # TabView (Movies, TV Shows, Saved, Search)
+│       ├── HomeView.swift        # Popular movies + upcoming banner
+│       ├── TvShowsView.swift     # Popular TV shows grid
+│       ├── SavedView.swift       # Bookmarks list
+│       ├── DetailView.swift      # Full item details
+│       └── Components.swift      # Shared SwiftUI components (PosterCard, etc.)
+├── web/                          # Standalone web app
+│   ├── index.html                # App shell
+│   ├── app.js                    # All frontend JS logic
+│   ├── style.css                 # Styles
+│   ├── server.js                 # Express server (TMDB proxy + stream proxy)
+│   └── package.json
 ├── gradle/
 │   └── libs.versions.toml        # Version catalog
+├── settings.gradle.kts           # Module declarations
 └── build.gradle.kts              # Root build configuration
 ```
 
