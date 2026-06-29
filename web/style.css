@@ -857,60 +857,74 @@ input, select { font-family: inherit; }
   color: #fff;
 }
 
-.player-external {
+/* ── Watch-card (Servers 2-6) ──────────────────────────────────────────── */
+.watch-card {
   display: flex;
   align-items: center;
-  gap: 32px;
-  padding: 40px 48px;
+  gap: 36px;
+  padding: 48px;
   background: var(--surface);
-  min-height: 320px;
+  min-height: 340px;
 }
-.ext-poster {
+.wc-poster {
   width: 140px;
   height: 210px;
   object-fit: cover;
-  border-radius: 10px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
   flex-shrink: 0;
 }
-.ext-info {
+.wc-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
-.ext-label {
-  font-size: 18px;
+.wc-server {
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--primary);
 }
-.ext-sub {
-  font-size: 14px;
+.wc-note {
+  font-size: 15px;
   color: var(--text-muted);
-  line-height: 1.6;
-  max-width: 380px;
+  line-height: 1.7;
 }
-.ext-open-btn {
+.wc-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: fit-content;
-  font-size: 15px;
-  padding: 14px 32px;
+  padding: 14px 36px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(229,9,20,0.4);
+  transition: all var(--transition);
   letter-spacing: 0.3px;
 }
-.ext-tip {
+.wc-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(229,9,20,0.55);
+}
+.wc-tip {
   font-size: 12px;
   color: var(--text-muted);
-  padding: 8px 12px;
+  padding: 8px 14px;
   background: var(--primary-dim);
   border-radius: 6px;
   border-left: 2px solid var(--primary);
 }
 @media (max-width: 600px) {
-  .player-external { flex-direction: column; padding: 24px; min-height: auto; }
-  .ext-poster { width: 100px; height: 150px; }
+  .watch-card { flex-direction: column; padding: 28px 20px; min-height: auto; gap: 20px; }
+  .wc-poster { width: 110px; height: 165px; }
   .player-title-text { max-width: 200px; }
 }
+
 
 
 /* ────────────────────────────────────────────────────────────────
