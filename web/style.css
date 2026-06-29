@@ -728,7 +728,7 @@ input, select { font-family: inherit; }
   border-radius: 16px;
   width: 100%;
   max-width: 1100px;
-  overflow-y: auto;
+  overflow: hidden;
   box-shadow: 0 40px 100px rgba(0,0,0,0.95);
   animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
   display: flex;
@@ -815,11 +815,9 @@ input, select { font-family: inherit; }
 /* iframe player */
 .player-frame-wrap {
   position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
+  padding-top: 56.25%;
   background: #000;
   flex-shrink: 0;
-  overflow: hidden;
 }
 .player-frame {
   position: absolute;
@@ -827,7 +825,6 @@ input, select { font-family: inherit; }
   width: 100%;
   height: 100%;
   border: none;
-  display: block;
 }
 /* Fallback "Not loading? Open in new tab" bar */
 .player-fallback {
