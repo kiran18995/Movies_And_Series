@@ -148,8 +148,8 @@
         <button class="modal-close" id="playerClose" aria-label="Close player">✕</button>
       </div>
 
-      <!-- Source tabs -->
-      <div class="player-tabs hidden" id="playerTabs"></div>
+      <!-- Source tabs (Server 1 – 6) -->
+      <div class="player-tabs" id="playerTabs"></div>
 
       <!-- Iframe player -->
       <div class="player-frame-wrap" id="playerFrameWrap">
@@ -162,27 +162,20 @@
           src=""
           allowfullscreen
           allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
           onload="setTimeout(() => document.getElementById('iframeLoader').classList.add('hidden'), 2500)"
         ></iframe>
       </div>
 
-      <!-- External server prompt (Servers 2-5) -->
-      <div class="player-external hidden" id="playerExternal">
-        <img class="ext-poster" id="extPoster" src="" alt="" />
-        <div class="ext-info">
-          <p class="ext-label">🌐 External Server</p>
-          <p class="ext-sub">This server opens in a new tab. Click below to start watching.</p>
-          <a class="btn-play ext-open-btn" id="extOpenBtn" href="#" target="_blank" rel="noopener noreferrer">
-            ▶ Watch Now →
-          </a>
-          <p class="ext-tip">💡 Tip: If it doesn't load, try Server 1 (built-in player).</p>
-        </div>
+      <!-- Fallback row: if iframe is blocked, open in new tab -->
+      <div class="player-fallback" id="playerFallback">
+        <span class="fallback-tip">🔒 Not loading?</span>
+        <a class="fallback-link" id="fallbackLink" href="#" target="_blank" rel="noopener noreferrer">
+          Open in new tab ↗
+        </a>
       </div>
 
     </div>
   </div>
-
 
   <!-- ── EPISODE PICKER ─────────────────────────────────────────────────── -->
   <div class="modal-overlay hidden" id="episodeOverlay">

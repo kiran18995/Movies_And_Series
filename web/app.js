@@ -417,8 +417,25 @@ function closeModal() {
   state.currentDetail = null;
 }
 
-// ── PLAYER SOURCES ───────────────────────────────────────────────────────
-// We only use streamimdb.ru as requested.
+// ── PLAYER SOURCES  (Server 1 – 6) ───────────────────────────────────────
+// Server 1 = streamimdb.ru — same URL the Android app uses (ItemDetailsBottomSheet.kt)
+// Servers 2-6 = popular embed providers as fallbacks
+const MOVIE_SOURCES = [
+  { label: 'Server 1', url: id => `https://streamimdb.ru/embed/movie/${id}` },
+  { label: 'Server 2', url: id => `https://vidsrc.me/embed/movie?tmdb=${id}` },
+  { label: 'Server 3', url: id => `https://player.autoembed.cc/embed/movie/${id}` },
+  { label: 'Server 4', url: id => `https://embed.su/embed/movie/${id}` },
+  { label: 'Server 5', url: id => `https://vidsrc.icu/embed/movie/${id}` },
+  { label: 'Server 6', url: id => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1` },
+];
+const TV_SOURCES = [
+  { label: 'Server 1', url: (id, s, e) => `https://streamimdb.ru/embed/tv/${id}/${s}/${e}` },
+  { label: 'Server 2', url: (id, s, e) => `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
+  { label: 'Server 3', url: (id, s, e) => `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}` },
+  { label: 'Server 4', url: (id, s, e) => `https://embed.su/embed/tv/${id}/${s}/${e}` },
+  { label: 'Server 5', url: (id, s, e) => `https://vidsrc.icu/embed/tv/${id}/${s}/${e}` },
+  { label: 'Server 6', url: (id, s, e) => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${s}&e=${e}` },
+];
 
 let currentPlayerItem    = null;
 let currentPlayerSeason  = 1;
@@ -432,35 +449,59 @@ function openPlayer(item) {
     openEpisodePicker(item);
     return;
   }
+  currentPlayerItem    = item;
+  currentPlayerSeason  = 1;
+  currentPlayerEpisode = 1;
+  playerIsTV           = false;
   launchPlayer(item.title || item.name, false, item, 1, 1);
 }
 
 function launchPlayer(title, isTV, item, season, episode) {
-  const url = item.isMovie 
-    ? `https://streamimdb.ru/embed/movie/${item.id}` 
-    : `https://streamimdb.ru/embed/tv/${item.id}/${season}/${episode}`;
-
+  playerIsTV = isTV;
   document.getElementById('playerTitle').textContent = title;
-  
-  // Hide external prompt, hide tabs
-  const tabs = document.getElementById('playerTabs');
-  if(tabs) tabs.style.display = 'none';
-  const external = document.getElementById('playerExternal');
-  if(external) external.style.display = 'none';
 
-  const frameWrap = document.getElementById('playerFrameWrap');
-  frameWrap.classList.remove('hidden');
-  
-  // Show loader
-  const loader = document.getElementById('iframeLoader');
-  if(loader) loader.classList.remove('hidden');
-  
-  const frame = document.getElementById('playerFrame');
-  frame.src = '';
-  setTimeout(() => { frame.src = url; }, 60);
-  
+  activeSourceIdx = 0;
+  renderPlayerTabs(isTV, item, season, episode);
+  loadSource(0, isTV, item, season, episode);
+
   document.getElementById('playerOverlay').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+}
+
+function renderPlayerTabs(isTV, item, season, episode) {
+  const bar     = document.getElementById('playerTabs');
+  const sources = isTV ? TV_SOURCES : MOVIE_SOURCES;
+  bar.innerHTML = '';
+
+  sources.forEach((src, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'player-tab' + (i === 0 ? ' active' : '');
+    btn.textContent = src.label;
+    btn.addEventListener('click', () => {
+      activeSourceIdx = i;
+      bar.querySelectorAll('.player-tab').forEach((b, j) => b.classList.toggle('active', j === i));
+      loadSource(i, isTV, item, season, episode);
+    });
+    bar.appendChild(btn);
+  });
+}
+
+function loadSource(idx, isTV, item, season, episode) {
+  const sources = isTV ? TV_SOURCES : MOVIE_SOURCES;
+  const url     = isTV
+    ? sources[idx].url(item.id, season, episode)
+    : sources[idx].url(item.id);
+
+  // Update iframe
+  const frame = document.getElementById('playerFrame');
+  const loader = document.getElementById('iframeLoader');
+  if (loader) loader.classList.remove('hidden');
+  frame.src = '';
+  setTimeout(() => { frame.src = url; }, 60);
+
+  // Keep "Open in new tab" fallback link in sync
+  const fallback = document.getElementById('fallbackLink');
+  if (fallback) fallback.href = url;
 }
 
 function closePlayer() {
@@ -471,6 +512,7 @@ function closePlayer() {
   if (!document.getElementById('modalOverlay').classList.contains('hidden')) return;
   document.body.style.overflow = '';
 }
+
 
 // ── EPISODE PICKER ────────────────────────────────────────────────────────
 function openEpisodePicker(item) {

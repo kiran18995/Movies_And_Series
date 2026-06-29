@@ -826,7 +826,37 @@ input, select { font-family: inherit; }
   height: 100%;
   border: none;
 }
-/* External server fallback */
+/* Fallback "Not loading? Open in new tab" bar */
+.player-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 7px 14px;
+  background: rgba(0,0,0,0.4);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.fallback-tip {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.fallback-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 3px 10px;
+  border: 1px solid var(--primary);
+  border-radius: 20px;
+  transition: all var(--transition);
+}
+.fallback-link:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
 .player-external {
   display: flex;
   align-items: center;
