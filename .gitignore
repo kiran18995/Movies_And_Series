@@ -20,3 +20,8 @@ local.properties
 /domain/src/main/java/com/kiran/movie/domain/usecase/GetUpcomingMoviesUseCase.kt
 /app/kiranmovie.jks
 /app/release/output-metadata.json
+
+# Web app — server-only files (not needed on GitHub Pages)
+web/node_modules/
+web/package-lock.json
+web/server.js
