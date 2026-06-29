@@ -2,7 +2,7 @@ name: Deploy Web App to GitHub Pages
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, kmp_migration]
     paths:
       - 'web/**'
   workflow_dispatch:   # allows manual trigger from Actions tab
