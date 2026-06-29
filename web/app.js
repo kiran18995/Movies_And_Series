@@ -492,53 +492,21 @@ function renderPlayerTabs(isTV, item, season, episode) {
 
 function loadSource(idx, isTV, item, season, episode) {
   const sources = isTV ? TV_SOURCES : MOVIE_SOURCES;
-  const src     = sources[idx];
   const url     = isTV
-    ? src.url(item.id, season, episode)
-    : src.url(item.id);
+    ? sources[idx].url(item.id, season, episode)
+    : sources[idx].url(item.id);
 
-  const frameWrap = document.getElementById('playerFrameWrap');
-  const watchCard = document.getElementById('watchCard');
+  // Update iframe
+  const frame = document.getElementById('playerFrame');
+  const loader = document.getElementById('iframeLoader');
+  if (loader) loader.classList.remove('hidden');
+  frame.src = '';
+  setTimeout(() => { frame.src = url; }, 60);
 
-  if (idx === 0) {
-    // ── Server 1: built-in iframe ────────────────────────────
-    watchCard.classList.add('hidden');
-    frameWrap.classList.remove('hidden');
-
-    const loader = document.getElementById('iframeLoader');
-    if (loader) loader.classList.remove('hidden');
-    const frame = document.getElementById('playerFrame');
-    frame.src = '';
-    setTimeout(() => { frame.src = url; }, 60);
-
-  } else {
-    // ── Servers 2-6: watch-card (opens in new tab) ───────────
-    frameWrap.classList.add('hidden');
-    const frame = document.getElementById('playerFrame');
-    frame.src = '';
-
-    watchCard.classList.remove('hidden');
-
-    // Poster
-    const poster = document.getElementById('wcPoster');
-    if (item && item.posterPath) {
-      poster.src = `${IMG_BASE}w342${item.posterPath}`;
-      poster.alt = item.title || item.name || '';
-      poster.style.display = '';
-    } else {
-      poster.style.display = 'none';
-    }
-
-    // Server label + link
-    document.getElementById('wcServer').textContent = src.label;
-    const btn = document.getElementById('wcBtn');
-    btn.href = url;
-
-    // Auto-open in new tab on first switch
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
+  // Keep "Open in new tab" fallback link in sync
+  const fallback = document.getElementById('fallbackLink');
+  if (fallback) fallback.href = url;
 }
-
 
 function closePlayer() {
   document.getElementById('playerOverlay').classList.add('hidden');

@@ -135,7 +135,7 @@
     </div>
   </div>
 
-  <!-- ── PLAYER MODAL ───────────────────────────────────────────────────── -->
+  <!-- ── PLAYER MODAL (iframe + source tabs) ────────────────────────────── -->
   <div class="modal-overlay hidden" id="playerOverlay">
     <div class="player-modal" id="playerModal">
 
@@ -148,33 +148,30 @@
         <button class="modal-close" id="playerClose" aria-label="Close player">✕</button>
       </div>
 
-      <!-- Source tabs: Server 1 – 6 -->
+      <!-- Source tabs (Server 1 – 6) -->
       <div class="player-tabs" id="playerTabs"></div>
 
-      <!-- ① Built-in iframe player (Server 1) -->
-      <div class="player-frame-wrap hidden" id="playerFrameWrap">
-        <div class="iframe-loader" id="iframeLoader"><div class="spinner"></div></div>
+      <!-- Iframe player -->
+      <div class="player-frame-wrap" id="playerFrameWrap">
+        <div class="iframe-loader hidden" id="iframeLoader">
+          <div class="spinner"></div>
+        </div>
         <iframe
           id="playerFrame"
           class="player-frame"
           src=""
           allowfullscreen
           allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-          onload="document.getElementById('iframeLoader').classList.add('hidden')"
+          onload="setTimeout(() => document.getElementById('iframeLoader').classList.add('hidden'), 2500)"
         ></iframe>
       </div>
 
-      <!-- ② Watch-card (Servers 2-6): opens in new tab -->
-      <div class="watch-card hidden" id="watchCard">
-        <img class="wc-poster" id="wcPoster" src="" alt="">
-        <div class="wc-body">
-          <p class="wc-server" id="wcServer">Server 2</p>
-          <p class="wc-note">This server plays best in a new tab.<br>Click the button to start watching.</p>
-          <a class="wc-btn" id="wcBtn" href="#" target="_blank" rel="noopener noreferrer">
-            ▶&nbsp;Watch Now
-          </a>
-          <p class="wc-tip">💡 Server 1 plays directly here (built-in).</p>
-        </div>
+      <!-- Fallback row: if iframe is blocked, open in new tab -->
+      <div class="player-fallback" id="playerFallback">
+        <span class="fallback-tip">🔒 Not loading?</span>
+        <a class="fallback-link" id="fallbackLink" href="#" target="_blank" rel="noopener noreferrer">
+          Open in new tab ↗
+        </a>
       </div>
 
     </div>
