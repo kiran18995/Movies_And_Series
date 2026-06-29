@@ -460,6 +460,10 @@ function launchPlayer(title, isTV, item, season, episode) {
   playerIsTV = isTV;
   document.getElementById('playerTitle').textContent = title;
 
+  // Reset panels: show iframe area, hide watch-card
+  document.getElementById('playerFrameWrap').classList.remove('hidden');
+  document.getElementById('watchCard').classList.add('hidden');
+
   activeSourceIdx = 0;
   renderPlayerTabs(isTV, item, season, episode);
   loadSource(0, isTV, item, season, episode);
