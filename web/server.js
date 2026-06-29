@@ -1,10 +1,10 @@
 'use strict';
 
-const path    = require('path');
+const path = require('path');
 const express = require('express');
 const { createProxyMiddleware, responseInterceptor } = require('http-proxy-middleware');
 
-const app  = express();
+const app = express();
 const PORT = 8080;
 
 // ── Serve the web app (index.html, app.js, style.css) ────────
@@ -51,7 +51,7 @@ app.use(
           .replace(/frame-ancestors\s+[^;]*(;|$)/gi, '')
           .trim();
         if (cleaned) res.setHeader('content-security-policy', cleaned);
-        else          res.removeHeader('content-security-policy');
+        else res.removeHeader('content-security-policy');
       }
       res.removeHeader('content-security-policy-report-only');
 
@@ -66,8 +66,8 @@ app.use(
       // on our local server (keeping the iframe same-origin with the proxy).
       html = html
         .replace(/((?:src|href|action|data-src)\s*=\s*["'])\/(?!\/)/g, '$1/stream/')
-        .replace(/url\(\s*['"]\/(?!\/)/g,  "url('/stream/")
-        .replace(/url\(\/(?!\/)/g,          'url(/stream/');
+        .replace(/url\(\s*['"]\/(?!\/)/g, "url('/stream/")
+        .replace(/url\(\/(?!\/)/g, 'url(/stream/');
 
       return Buffer.from(html, 'utf-8');
     }),
