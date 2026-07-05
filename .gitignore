@@ -25,3 +25,8 @@ local.properties
 web/node_modules/
 web/package-lock.json
 web/server.js
+
+.firebase/
+web/node_modules/
+web/package-lock.json
+
