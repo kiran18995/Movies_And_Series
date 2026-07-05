@@ -34,6 +34,8 @@
 
 ---
 
+![Kiran's GitHub stats](https://github-readme-stats.vercel.app/api?username=kiran18995&show_icons=true&theme=radical)
+
 ## ✨ Features
 
 - 🎥 **Browse Popular Movies** — Discover trending and popular movies with infinite scroll pagination
