@@ -27,23 +27,23 @@ import com.kiran.movie.core.ui.theme.ThemePreviews
 @Composable
 fun EmptyStateScreen(icon: ImageVector, message: String, modifier: Modifier = Modifier) {
     Column(
-            modifier = modifier.fillMaxSize().padding(32.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxSize().padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(80.dp),
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(80.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-                text = message,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
+            text = message,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center,
         )
     }
 }
@@ -54,8 +54,8 @@ private fun EmptyStateScreenPreview() {
     MovieTheme {
         Surface {
             EmptyStateScreen(
-                    icon = Icons.Default.Warning,
-                    message = "No items found. Try again later."
+                icon = Icons.Default.Warning,
+                message = "No items found. Try again later.",
             )
         }
     }

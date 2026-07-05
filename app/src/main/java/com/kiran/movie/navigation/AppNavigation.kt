@@ -41,7 +41,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -54,6 +53,7 @@ import com.kiran.movie.ui.movies.MoviesScreen
 import com.kiran.movie.ui.saved.SavedScreen
 import com.kiran.movie.ui.tvshows.TvShowsScreen
 import kotlin.math.roundToInt
+import org.koin.androidx.compose.koinViewModel
 
 sealed class Screen(val route: String, val titleRes: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     object Movies : Screen("movies", R.string.title_movies, Icons.Filled.Home)
@@ -104,7 +104,6 @@ fun AppNavigation(
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 if (isListEmpty) return Offset.Zero
-                
                 val delta = available.y
 
                 val newBottomOffset = bottomBarOffsetHeightPx - delta

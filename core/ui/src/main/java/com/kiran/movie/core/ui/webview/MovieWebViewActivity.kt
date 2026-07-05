@@ -158,7 +158,6 @@ class MovieWebViewActivity : ComponentActivity() {
             elevation = 16f
             alpha = 0f
             isClickable = false
-            
             setOnClickListener {
                 animate().cancel()
                 alpha = 1f
@@ -213,7 +212,6 @@ class MovieWebViewActivity : ComponentActivity() {
                     playPauseBtn.animate().cancel()
                     playPauseBtn.alpha = 1f
                     playPauseBtn.isClickable = true
-                    
                     webView.evaluateJavascript("document.querySelector('video') ? document.querySelector('video').paused.toString() : 'null'") { res ->
                         if (res == "\"false\"" || res == "false") {
                             playPauseBtn.animate()
@@ -228,7 +226,7 @@ class MovieWebViewActivity : ComponentActivity() {
             }
             false
         }
-        
+
         webView.setOnTouchListener(touchListener)
 
         // ── Chrome client for media + fullscreen ─────────────────────────

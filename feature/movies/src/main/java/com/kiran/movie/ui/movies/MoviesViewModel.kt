@@ -1,30 +1,30 @@
 package com.kiran.movie.ui.movies
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import android.util.Log
 import androidx.paging.cachedIn
 import com.kiran.movie.core.ui.models.MovieLanguage
 import com.kiran.movie.core.ui.models.MovieSortOrder
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.domain.usecase.GetBookmarkedIdsUseCase
-import com.kiran.movie.domain.usecase.GetUpcomingMoviesUseCase
 import com.kiran.movie.domain.usecase.GetMoviesUseCase
+import com.kiran.movie.domain.usecase.GetUpcomingMoviesUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
-class MoviesViewModel (
+class MoviesViewModel(
     private val getMoviesUseCase: GetMoviesUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
     private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase,

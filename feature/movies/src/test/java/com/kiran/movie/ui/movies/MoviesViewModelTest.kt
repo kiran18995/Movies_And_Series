@@ -113,7 +113,7 @@ class MoviesViewModelTest {
         io.mockk.clearMocks(mockGetMoviesUseCase, mockGetUpcomingMoviesUseCase, answers = false)
 
         val newLanguage = com.kiran.movie.core.ui.models.MovieLanguage.HINDI
-        
+
         viewModel.onEvent(MoviesContract.Event.SelectLanguage(newLanguage))
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -129,7 +129,7 @@ class MoviesViewModelTest {
         io.mockk.clearMocks(mockGetMoviesUseCase, answers = false)
 
         val newSortOrder = com.kiran.movie.core.ui.models.MovieSortOrder.TOP_RATED
-        
+
         viewModel.onEvent(MoviesContract.Event.SelectSortOrder(newSortOrder))
         testDispatcher.scheduler.advanceUntilIdle()
 

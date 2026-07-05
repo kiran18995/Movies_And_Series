@@ -1,9 +1,5 @@
 package com.kiran.movie.core.ui.components
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import com.kiran.movie.core.ui.theme.MovieTheme
-import com.kiran.movie.core.ui.theme.ThemePreviews
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -23,6 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.kiran.movie.core.ui.BuildConfig
 import com.kiran.movie.core.ui.R
+import com.kiran.movie.core.ui.theme.MovieTheme
+import com.kiran.movie.core.ui.theme.ThemePreviews
 import com.kiran.movie.data.models.Item
 import kotlinx.coroutines.launch
 

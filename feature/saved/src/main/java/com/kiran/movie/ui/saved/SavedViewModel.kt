@@ -6,21 +6,21 @@ import androidx.lifecycle.viewModelScope
 import com.kiran.movie.domain.usecase.GetAllBookmarksUseCase
 import com.kiran.movie.domain.usecase.ToggleBookmarkUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
-class SavedViewModel (
+class SavedViewModel(
     private val getAllBookmarksUseCase: GetAllBookmarksUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase
 ) : ViewModel() {

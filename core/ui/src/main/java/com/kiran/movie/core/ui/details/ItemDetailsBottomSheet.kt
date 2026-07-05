@@ -1,12 +1,10 @@
 package com.kiran.movie.core.ui.details
 
-import androidx.compose.material3.Surface
-import com.kiran.movie.core.ui.theme.MovieTheme
-import com.kiran.movie.core.ui.theme.ThemePreviews
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebResourceResponse
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -56,22 +55,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.foundation.Canvas
 import androidx.core.net.toUri
-import org.koin.androidx.compose.koinViewModel
 import coil.compose.AsyncImage
 import com.kiran.movie.core.ui.BuildConfig
+import com.kiran.movie.core.ui.theme.MovieTheme
+import com.kiran.movie.core.ui.theme.ThemePreviews
 import com.kiran.movie.core.ui.webview.MovieWebViewActivity
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.data.models.ItemDetails
+import org.koin.androidx.compose.koinViewModel
 import java.io.ByteArrayInputStream
 
 // ---------------------------------------------------------------------------

@@ -49,7 +49,7 @@ class MoviesAndSeriesRepositoryImplTest {
         val page = 1
         val item = createTestItem(1, "Upcoming Movie")
         val response = ItemResponse(page = 1, results = listOf(item), totalPages = 1, totalResults = 1)
-        
+
         coEvery { api.getUpcomingMoviesByLanguage(language, any(), page) } returns response
 
         // When
