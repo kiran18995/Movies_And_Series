@@ -1,11 +1,12 @@
 package com.kiran.movie.core.ui.webview
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -21,8 +22,7 @@ import java.io.ByteArrayInputStream
 
 /**
  * A full-screen Activity that hosts a WebView for streaming.
- * Handles proper fullscreen video, quality controls exposed by the
- * embedded player, ad-blocking, and hardware acceleration.
+ * Handles proper fullscreen video, ad-blocking, and hardware acceleration.
  */
 class MovieWebViewActivity : ComponentActivity() {
 
@@ -55,30 +55,95 @@ class MovieWebViewActivity : ComponentActivity() {
             "revcontent.com", "adtelligent.com",
         )
 
+        // Redirect/popup URL patterns to block
+        private val AD_URL_PATTERNS = listOf(
+            "popunder", "pop-under", "popup", "pop-up",
+            "click.php", "redirect.php", "ad.php",
+            "track.php", "tracking.", "aff.", "affiliate",
+        )
+
         private val EMPTY_RESPONSE by lazy {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
         }
 
-        private fun shouldBlock(url: String?): Boolean {
+        private fun shouldBlockResource(url: String?): Boolean {
             if (url == null) return false
             return try {
                 val host = android.net.Uri.parse(url).host?.lowercase() ?: return false
                 AD_HOSTS.any { host == it || host.endsWith(".$it") }
             } catch (_: Exception) { false }
         }
+
+        /**
+         * JS injected after page load — uses native events instead of polling.
+         * Calls AndroidBridge.onVideoPlay() / onVideoPause() so the native UI
+         * reacts without any setInterval/setTimeout on the Android side.
+         */
+        private val VIDEO_OBSERVER_JS = """
+            (function() {
+                function attachObserver(video) {
+                    if (video._androidObserverAttached) return;
+                    video._androidObserverAttached = true;
+                    video.addEventListener('play',  function() { AndroidBridge.onVideoPlay();  });
+                    video.addEventListener('pause', function() { AndroidBridge.onVideoPause(); });
+                }
+                document.querySelectorAll('video').forEach(attachObserver);
+                new MutationObserver(function(mutations) {
+                    mutations.forEach(function(m) {
+                        m.addedNodes.forEach(function(n) {
+                            if (n.nodeName === 'VIDEO') attachObserver(n);
+                            if (n.querySelectorAll) n.querySelectorAll('video').forEach(attachObserver);
+                        });
+                    });
+                }).observe(document.body, { childList: true, subtree: true });
+            })();
+        """.trimIndent()
     }
 
     private lateinit var webView: WebView
     private lateinit var root: FrameLayout
+    private lateinit var playPauseBtn: android.widget.ImageButton
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
     private var chromeClient: WebChromeClient? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    // Declared as a field so it can be cancelled precisely
+    private val hideButtonRunnable = Runnable {
+        playPauseBtn.animate()
+            .alpha(0f)
+            .setDuration(400)
+            .withEndAction { playPauseBtn.isClickable = false }
+            .start()
+    }
+
+    /** Receives play/pause events from the JavaScript bridge. */
+    inner class AndroidBridge {
+        @JavascriptInterface
+        fun onVideoPlay() {
+            mainHandler.post {
+                playPauseBtn.setImageResource(android.R.drawable.ic_media_pause)
+                mainHandler.removeCallbacks(hideButtonRunnable)
+                mainHandler.postDelayed(hideButtonRunnable, 2500)
+            }
+        }
+
+        @JavascriptInterface
+        fun onVideoPause() {
+            mainHandler.post {
+                playPauseBtn.setImageResource(android.R.drawable.ic_media_play)
+                mainHandler.removeCallbacks(hideButtonRunnable)
+                playPauseBtn.animate().cancel()
+                playPauseBtn.alpha = 1f
+                playPauseBtn.isClickable = true
+            }
+        }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Keep screen on while watching
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         val url = intent.getStringExtra(EXTRA_URL) ?: run { finish(); return }
@@ -87,8 +152,8 @@ class MovieWebViewActivity : ComponentActivity() {
         setContentView(root)
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             insets
         }
 
@@ -106,8 +171,7 @@ class MovieWebViewActivity : ComponentActivity() {
             settings.allowContentAccess = true
             settings.allowFileAccess = true
             settings.loadsImagesAutomatically = true
-            settings.mixedContentMode =
-                android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             settings.useWideViewPort = true
             settings.loadWithOverviewMode = true
             settings.builtInZoomControls = false
@@ -118,13 +182,16 @@ class MovieWebViewActivity : ComponentActivity() {
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/120.0.0.0 Mobile Safari/537.36"
 
-            // ── Ad-blocking client ───────────────────────────────────────────
+            // ── JS Bridge (play/pause events → native UI) ──────────────────
+            addJavascriptInterface(AndroidBridge(), "AndroidBridge")
+
+            // ── Ad-blocking WebViewClient ────────────────────────────────────
             webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(
                     view: WebView,
                     request: WebResourceRequest,
                 ): WebResourceResponse? {
-                    if (shouldBlock(request.url.toString())) return EMPTY_RESPONSE
+                    if (shouldBlockResource(request.url.toString())) return EMPTY_RESPONSE
                     return super.shouldInterceptRequest(view, request)
                 }
 
@@ -132,18 +199,33 @@ class MovieWebViewActivity : ComponentActivity() {
                     view: WebView,
                     request: WebResourceRequest,
                 ): Boolean {
-                    // Block all top-level navigations (ad redirects)
-                    val host = request.url.host ?: return true
-                    if (!host.contains("streamimdb.ru")) {
-                        return true // True means we intercept it and cancel the navigation
-                    }
+                    val urlStr = request.url.toString().lowercase()
+                    val host = request.url.host?.lowercase() ?: return true
+                    val scheme = request.url.scheme?.lowercase() ?: return true
+
+                    // Block non-http(s) navigation schemes (intent://, market://, etc.)
+                    if (scheme !in setOf("http", "https", "data", "blob")) return true
+
+                    // Block known ad hosts
+                    if (AD_HOSTS.any { host == it || host.endsWith(".$it") }) return true
+
+                    // Block known ad redirect URL patterns
+                    if (AD_URL_PATTERNS.any { urlStr.contains(it) }) return true
+
+                    // Allow all other navigations (CDN hops, stream segments, etc.)
                     return false
+                }
+
+                override fun onPageFinished(view: WebView, url: String) {
+                    super.onPageFinished(view, url)
+                    // Inject event-listener bridge — no more polling
+                    view.evaluateJavascript(VIDEO_OBSERVER_JS, null)
                 }
             }
         }
 
         // ── Native Center Play/Pause Button Overlay ───────────────────────
-        val playPauseBtn = android.widget.ImageButton(this).apply {
+        playPauseBtn = android.widget.ImageButton(this).apply {
             layoutParams = FrameLayout.LayoutParams(200, 200).apply {
                 gravity = android.view.Gravity.CENTER
             }
@@ -165,62 +247,28 @@ class MovieWebViewActivity : ComponentActivity() {
                     """
                     (function() {
                         var v = document.querySelector('video');
-                        if(v) {
-                            if(v.paused) v.play();
-                            else v.pause();
-                            return v.paused.toString();
-                        }
-                        return "null";
+                        if (v) { if (v.paused) v.play(); else v.pause(); }
                     })();
                     """.trimIndent()
-                ) { result ->
-                    if (result == "\"false\"" || result == "false") {
-                        setImageResource(android.R.drawable.ic_media_pause)
-                        animate().alpha(0f).setStartDelay(1500).setDuration(500)
-                            .withEndAction { isClickable = false }.start()
-                    } else {
-                        setImageResource(android.R.drawable.ic_media_play)
-                        isClickable = true
-                    }
-                }
+                    // UI state is updated by the JS bridge (onVideoPlay / onVideoPause)
+                , null)
             }
         }
 
-        val updateStateRunnable = object : Runnable {
-            override fun run() {
-                webView.evaluateJavascript(
-                    "document.querySelector('video') ? document.querySelector('video').paused.toString() : 'null'"
-                ) { result ->
-                    if (result == "\"true\"" || result == "true") {
-                        playPauseBtn.setImageResource(android.R.drawable.ic_media_play)
-                        playPauseBtn.animate().cancel()
-                        playPauseBtn.alpha = 1f
-                        playPauseBtn.isClickable = true
-                    } else if (result == "\"false\"" || result == "false") {
-                        playPauseBtn.setImageResource(android.R.drawable.ic_media_pause)
-                    }
-                }
-                playPauseBtn.postDelayed(this, 1000)
-            }
-        }
-        playPauseBtn.post(updateStateRunnable)
-
+        // ── Touch: reveal button on tap, auto-hide if playing ────────────
         @SuppressLint("ClickableViewAccessibility")
         val touchListener = android.view.View.OnTouchListener { _, event ->
             if (event.action == android.view.MotionEvent.ACTION_DOWN) {
-                if (playPauseBtn.alpha == 0f) {
-                    playPauseBtn.animate().cancel()
-                    playPauseBtn.alpha = 1f
-                    playPauseBtn.isClickable = true
-                    webView.evaluateJavascript("document.querySelector('video') ? document.querySelector('video').paused.toString() : 'null'") { res ->
-                        if (res == "\"false\"" || res == "false") {
-                            playPauseBtn.animate()
-                                .alpha(0f)
-                                .setStartDelay(2500)
-                                .setDuration(300)
-                                .withEndAction { playPauseBtn.isClickable = false }
-                                .start()
-                        }
+                mainHandler.removeCallbacks(hideButtonRunnable)
+                playPauseBtn.animate().cancel()
+                playPauseBtn.alpha = 1f
+                playPauseBtn.isClickable = true
+
+                webView.evaluateJavascript(
+                    "document.querySelector('video') ? !document.querySelector('video').paused : false"
+                ) { isPlaying ->
+                    if (isPlaying == "true") {
+                        mainHandler.postDelayed(hideButtonRunnable, 2500)
                     }
                 }
             }
@@ -237,19 +285,10 @@ class MovieWebViewActivity : ComponentActivity() {
             }
 
             @SuppressLint("ClickableViewAccessibility")
-            override fun onShowCustomView(
-                view: View,
-                callback: CustomViewCallback,
-            ) {
-                // If a custom view is already showing, dismiss it first
-                if (customView != null) {
-                    callback.onCustomViewHidden()
-                    return
-                }
+            override fun onShowCustomView(view: View, callback: CustomViewCallback) {
+                if (customView != null) { callback.onCustomViewHidden(); return }
                 customView = view
                 customViewCallback = callback
-
-                // Add fullscreen view on top of everything
                 root.addView(
                     view,
                     FrameLayout.LayoutParams(
@@ -259,8 +298,6 @@ class MovieWebViewActivity : ComponentActivity() {
                 )
                 view.setOnTouchListener(touchListener)
                 root.bringChildToFront(playPauseBtn)
-
-                // Hide system bars for true immersive fullscreen
                 enterImmersive()
             }
 
@@ -272,29 +309,26 @@ class MovieWebViewActivity : ComponentActivity() {
                 exitImmersive()
             }
 
-            override fun onConsoleMessage(
-                consoleMessage: android.webkit.ConsoleMessage,
-            ): Boolean = true // suppress console noise
+            override fun onConsoleMessage(msg: android.webkit.ConsoleMessage): Boolean = true
         }
         chromeClient = client
         webView.webChromeClient = client
 
         webView.loadUrl(url)
 
-    root.addView(webView)
-    root.addView(playPauseBtn)
+        root.addView(webView)
+        root.addView(playPauseBtn)
 
-    // Back press: go back in WebView history, or exit fullscreen, or finish
-    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() {
-            when {
-                customView != null -> chromeClient?.onHideCustomView()
-                webView.canGoBack() -> webView.goBack()
-                else -> finish()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                when {
+                    customView != null -> chromeClient?.onHideCustomView()
+                    webView.canGoBack() -> webView.goBack()
+                    else -> finish()
+                }
             }
-        }
-    })
-}
+        })
+    }
 
     @Suppress("DEPRECATION")
     private fun enterImmersive() {
@@ -315,6 +349,7 @@ class MovieWebViewActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
+        mainHandler.removeCallbacks(hideButtonRunnable)
         webView.onPause()
     }
 
@@ -324,6 +359,8 @@ class MovieWebViewActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        mainHandler.removeCallbacks(hideButtonRunnable)
+        webView.removeJavascriptInterface("AndroidBridge")
         webView.stopLoading()
         webView.destroy()
         super.onDestroy()
