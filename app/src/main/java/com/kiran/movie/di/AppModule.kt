@@ -4,7 +4,7 @@ import androidx.room.Room
 import com.kiran.movie.BuildConfig
 import com.kiran.movie.api.KtorMoviesAndSeriesApi
 import com.kiran.movie.api.MoviesAndSeriesApi
-import com.kiran.movie.core.ui.MainViewModel
+import com.kiran.movie.MainViewModel
 import com.kiran.movie.core.ui.details.ItemDetailsViewModel
 import com.kiran.movie.data.repository.MoviesAndSeriesRepository
 import com.kiran.movie.data.repository.MoviesAndSeriesRepositoryImpl
@@ -43,74 +43,79 @@ private const val AUTHORIZATION = "Authorization"
 private const val BEARER = "Bearer"
 private const val BOOKMARK_DATABASE = "BookmarkDatabase"
 
-val appModule = module {
-    single<HttpClient> {
-        HttpClient(Android) {
-            install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                    isLenient = true
-                })
-            }
-            if (BuildConfig.DEBUG) {
-                install(Logging) {
-                    level = LogLevel.INFO
-                    logger = object : Logger {
-                        override fun log(message: String) {
-                            println("Ktor: $message")
-                        }
+val appModule =
+    module {
+        single<HttpClient> {
+            HttpClient(Android) {
+                install(ContentNegotiation) {
+                    json(
+                        Json {
+                            ignoreUnknownKeys = true
+                            isLenient = true
+                        },
+                    )
+                }
+                if (BuildConfig.DEBUG) {
+                    install(Logging) {
+                        level = LogLevel.INFO
+                        logger =
+                            object : Logger {
+                                override fun log(message: String) {
+                                    println("Ktor: $message")
+                                }
+                            }
                     }
                 }
-            }
-            install(io.ktor.client.plugins.HttpTimeout) {
-                requestTimeoutMillis = 15000
-                connectTimeoutMillis = 15000
-                socketTimeoutMillis = 15000
-            }
-            install(io.ktor.client.plugins.HttpRequestRetry) {
-                retryOnExceptionOrServerErrors(maxRetries = 3)
-                exponentialDelay()
-                retryIf { request, response ->
-                    !response.status.isSuccess() && (response.status.value == 429 || response.status.value >= 500)
+                install(io.ktor.client.plugins.HttpTimeout) {
+                    requestTimeoutMillis = 15000
+                    connectTimeoutMillis = 15000
+                    socketTimeoutMillis = 15000
+                }
+                install(io.ktor.client.plugins.HttpRequestRetry) {
+                    retryOnExceptionOrServerErrors(maxRetries = 3)
+                    exponentialDelay()
+                    retryIf { request, response ->
+                        !response.status.isSuccess() && (response.status.value == 429 || response.status.value >= 500)
+                    }
+                }
+                defaultRequest {
+                    url(BuildConfig.BASE_URL)
+                    header(AUTHORIZATION, "$BEARER $AUTHORIZATION_TOKEN")
+                    header(io.ktor.http.HttpHeaders.Accept, "application/json")
+                    header(io.ktor.http.HttpHeaders.UserAgent, "MoviesApp/1.0 (Android; Kotlin Multiplatform)")
                 }
             }
-            defaultRequest {
-                url(BuildConfig.BASE_URL)
-                header(AUTHORIZATION, "$BEARER $AUTHORIZATION_TOKEN")
-                header(io.ktor.http.HttpHeaders.Accept, "application/json")
-                header(io.ktor.http.HttpHeaders.UserAgent, "MoviesApp/1.0 (Android; Kotlin Multiplatform)")
-            }
         }
+
+        single<MoviesAndSeriesApi> { KtorMoviesAndSeriesApi(get()) }
+
+        single<BookmarkDatabase> {
+            val context = androidContext()
+            val dbFile = context.getDatabasePath(BOOKMARK_DATABASE)
+            val builder =
+                Room.databaseBuilder(
+                    context,
+                    BookmarkDatabase::class.java,
+                    dbFile.absolutePath,
+                )
+            getRoomDatabase(builder)
+        }
+
+        single<MoviesAndSeriesRepository> { MoviesAndSeriesRepositoryImpl(get(), get()) }
+
+        factoryOf(::ToggleBookmarkUseCase)
+        factoryOf(::GetTvShowsListUseCase)
+        factoryOf(::GetUpcomingMoviesUseCase)
+        factoryOf(::GetAllBookmarksUseCase)
+        factoryOf(::GetBookmarkedIdsUseCase)
+        factoryOf(::GetMoviesUseCase)
+        factoryOf(::GetMoviesListUseCase)
+        factoryOf(::GetItemDetailsUseCase)
+        factoryOf(::GetTvShowsUseCase)
+
+        viewModelOf(::MainViewModel)
+        viewModelOf(::ItemDetailsViewModel)
+        viewModelOf(::MoviesViewModel)
+        viewModelOf(::TvShowsViewModel)
+        viewModelOf(::SavedViewModel)
     }
-
-    single<MoviesAndSeriesApi> { KtorMoviesAndSeriesApi(get()) }
-
-    single<BookmarkDatabase> {
-        val context = androidContext()
-        val dbFile = context.getDatabasePath(BOOKMARK_DATABASE)
-        val builder = Room.databaseBuilder(
-            context,
-            BookmarkDatabase::class.java,
-            dbFile.absolutePath,
-        )
-        getRoomDatabase(builder)
-    }
-
-    single<MoviesAndSeriesRepository> { MoviesAndSeriesRepositoryImpl(get(), get()) }
-
-    factoryOf(::ToggleBookmarkUseCase)
-    factoryOf(::GetTvShowsListUseCase)
-    factoryOf(::GetUpcomingMoviesUseCase)
-    factoryOf(::GetAllBookmarksUseCase)
-    factoryOf(::GetBookmarkedIdsUseCase)
-    factoryOf(::GetMoviesUseCase)
-    factoryOf(::GetMoviesListUseCase)
-    factoryOf(::GetItemDetailsUseCase)
-    factoryOf(::GetTvShowsUseCase)
-
-    viewModelOf(::MainViewModel)
-    viewModelOf(::ItemDetailsViewModel)
-    viewModelOf(::MoviesViewModel)
-    viewModelOf(::TvShowsViewModel)
-    viewModelOf(::SavedViewModel)
-}

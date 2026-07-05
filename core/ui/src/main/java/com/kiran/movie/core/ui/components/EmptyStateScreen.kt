@@ -25,7 +25,11 @@ import com.kiran.movie.core.ui.theme.MovieTheme
 import com.kiran.movie.core.ui.theme.ThemePreviews
 
 @Composable
-fun EmptyStateScreen(icon: ImageVector, message: String, modifier: Modifier = Modifier) {
+fun EmptyStateScreen(
+    icon: ImageVector,
+    message: String,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier.fillMaxSize().padding(32.dp),
         verticalArrangement = Arrangement.Center,

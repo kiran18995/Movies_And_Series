@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.kiran.movie.feature.movies"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

@@ -49,7 +49,7 @@ kotlin {
 
 android {
     namespace = "com.kiran.movie.core.network"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

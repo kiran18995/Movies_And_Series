@@ -1,5 +1,5 @@
-import java.util.Properties
 import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.kiran.movie"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.kiran.movie"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 2
         versionName = "1.1"
 
@@ -24,7 +24,9 @@ android {
         buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
         val baseImageUrl = extra.properties["BASE_IMAGE_URL"] as String? ?: "https://image.tmdb.org/t/p/w500"
         buildConfigField("String", "BASE_IMAGE_URL", "\"$baseImageUrl\"")
-        val accessToken = extra.properties["API_READ_ACCESS_TOKEN"] as String? ?: "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZTZlYjBkNTE3OWY3MDMxYWNmMzE0ZGI4ZTQxMTJhOSIsIm5iZiI6MTcxOTI1ODUwMi42NTkxMzIsInN1YiI6IjVjYTFiMmNkOTI1MTQxMWExODA4ZDEyZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xjTYKsio_c1M2zxwtfdpOgSyGthyjnsvzRh3ifbBFYg"
+        val accessToken =
+            extra.properties["API_READ_ACCESS_TOKEN"] as String?
+                ?: "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZTZlYjBkNTE3OWY3MDMxYWNmMzE0ZGI4ZTQxMTJhOSIsIm5iZiI6MTcxOTI1ODUwMi42NTkxMzIsInN1YiI6IjVjYTFiMmNkOTI1MTQxMWExODA4ZDEyZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xjTYKsio_c1M2zxwtfdpOgSyGthyjnsvzRh3ifbBFYg"
         buildConfigField("String", "API_READ_ACCESS_TOKEN", "\"$accessToken\"")
     }
 
@@ -35,12 +37,12 @@ android {
             // RELEASE_STORE_PASSWORD=your_store_password
             // RELEASE_KEY_ALIAS=your_key_alias
             // RELEASE_KEY_PASSWORD=your_key_password
-            
+
             val keystorePropertiesFile = rootProject.file("local.properties")
             if (keystorePropertiesFile.exists()) {
                 val properties = Properties()
                 properties.load(FileInputStream(keystorePropertiesFile))
-                
+
                 val storeFilePath = properties.getProperty("RELEASE_STORE_FILE")
                 if (storeFilePath != null) {
                     storeFile = rootProject.file(storeFilePath)
@@ -58,7 +60,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
         getByName("release") {
@@ -67,7 +69,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -91,7 +93,6 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
-
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -162,6 +163,6 @@ dependencies {
     implementation(libs.androidx.paging.compose)
     debugImplementation(libs.androidx.ui.tooling)
 
-    //leak canary
+    // leak canary
     debugImplementation(libs.leakcanary.android)
 }

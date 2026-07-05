@@ -1,4 +1,4 @@
-package com.kiran.movie.core.ui
+package com.kiran.movie
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

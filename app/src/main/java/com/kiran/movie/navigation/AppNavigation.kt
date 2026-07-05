@@ -47,31 +47,36 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.kiran.movie.core.ui.MainViewModel
+import com.kiran.movie.MainViewModel
 import com.kiran.movie.core.ui.R
 import com.kiran.movie.ui.movies.MoviesScreen
 import com.kiran.movie.ui.saved.SavedScreen
 import com.kiran.movie.ui.tvshows.TvShowsScreen
-import kotlin.math.roundToInt
 import org.koin.androidx.compose.koinViewModel
+import kotlin.math.roundToInt
 
-sealed class Screen(val route: String, val titleRes: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+sealed class Screen(
+    val route: String,
+    val titleRes: Int,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+) {
     object Movies : Screen("movies", R.string.title_movies, Icons.Filled.Home)
+
     object TvShows : Screen("tv_shows", R.string.title_tv_shows, Icons.AutoMirrored.Filled.List)
+
     object Saved : Screen("saved", R.string.title_saved, Icons.Filled.Favorite)
 }
 
-val items = listOf(
-    Screen.Movies,
-    Screen.TvShows,
-    Screen.Saved
-)
+val items =
+    listOf(
+        Screen.Movies,
+        Screen.TvShows,
+        Screen.Saved,
+    )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation(
-    mainViewModel: MainViewModel = koinViewModel()
-) {
+fun AppNavigation(mainViewModel: MainViewModel = koinViewModel()) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -100,30 +105,36 @@ fun AppNavigation(
         }
     }
 
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (isListEmpty) return Offset.Zero
-                val delta = available.y
+    val nestedScrollConnection =
+        remember {
+            object : NestedScrollConnection {
+                override fun onPreScroll(
+                    available: Offset,
+                    source: NestedScrollSource,
+                ): Offset {
+                    if (isListEmpty) return Offset.Zero
+                    val delta = available.y
 
-                val newBottomOffset = bottomBarOffsetHeightPx - delta
-                bottomBarOffsetHeightPx = newBottomOffset.coerceIn(0f, bottomBarHeightPx)
+                    val newBottomOffset = bottomBarOffsetHeightPx - delta
+                    bottomBarOffsetHeightPx = newBottomOffset.coerceIn(0f, bottomBarHeightPx)
 
-                return Offset.Zero
+                    return Offset.Zero
+                }
             }
         }
-    }
 
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(nestedScrollConnection)
-            .navigationBarsPadding(),
+        modifier =
+            Modifier
+                .nestedScroll(nestedScrollConnection)
+                .navigationBarsPadding(),
         topBar = {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 androidx.compose.material3.SearchBar(
                     inputField = {
@@ -134,20 +145,21 @@ fun AppNavigation(
                             expanded = false,
                             onExpandedChange = { },
                             placeholder = { Text(searchHint) },
-                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") }
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
                         )
                     },
                     expanded = false,
                     onExpandedChange = { },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {}
             }
         },
         bottomBar = {
             NavigationBar(
-                modifier = Modifier
-                    .onSizeChanged { bottomBarHeightPx = it.height.toFloat() }
-                    .offset { IntOffset(x = 0, y = bottomBarOffsetHeightPx.roundToInt()) },
+                modifier =
+                    Modifier
+                        .onSizeChanged { bottomBarHeightPx = it.height.toFloat() }
+                        .offset { IntOffset(x = 0, y = bottomBarOffsetHeightPx.roundToInt()) },
                 containerColor = MaterialTheme.colorScheme.surface,
             ) {
                 items.forEach { screen ->
@@ -155,18 +167,19 @@ fun AppNavigation(
                     // Bouncy icon scale when tab is selected
                     val iconScale by animateFloatAsState(
                         targetValue = if (isSelected) 1.4f else 1f,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioHighBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        ),
-                        label = "navIcon_${screen.route}"
+                        animationSpec =
+                            spring(
+                                dampingRatio = Spring.DampingRatioHighBouncy,
+                                stiffness = Spring.StiffnessMedium,
+                            ),
+                        label = "navIcon_${screen.route}",
                     )
                     NavigationBarItem(
                         icon = {
                             Icon(
                                 screen.icon,
                                 contentDescription = null,
-                                modifier = Modifier.scale(iconScale)
+                                modifier = Modifier.scale(iconScale),
                             )
                         },
                         label = { Text(stringResource(screen.titleRes)) },
@@ -180,17 +193,18 @@ fun AppNavigation(
                                 restoreState = true
                             }
                         },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+                        colors =
+                            NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            ),
                     )
                 }
             }
-        }
+        },
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
             NavHost(navController, startDestination = Screen.Movies.route) {
@@ -198,14 +212,14 @@ fun AppNavigation(
                     MoviesScreen(
                         searchQuery = searchQuery,
                         onListEmptyStateChange = { mainViewModel.updateIsListEmpty(it) },
-                        innerPadding = innerPadding
+                        innerPadding = innerPadding,
                     )
                 }
                 composable(Screen.TvShows.route) {
                     TvShowsScreen(
                         searchQuery = searchQuery,
                         onListEmptyStateChange = { mainViewModel.updateIsListEmpty(it) },
-                        innerPadding = innerPadding
+                        innerPadding = innerPadding,
                     )
                 }
                 composable(Screen.Saved.route) {
@@ -213,7 +227,7 @@ fun AppNavigation(
                         searchQuery = searchQuery,
                         onListEmptyStateChange = { mainViewModel.updateIsListEmpty(it) },
                         onUpdateSearchHint = { mainViewModel.updateSearchHint(it) },
-                        innerPadding = innerPadding
+                        innerPadding = innerPadding,
                     )
                 }
             }

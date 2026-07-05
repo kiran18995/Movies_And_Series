@@ -53,7 +53,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.koin.androidx.compose.koinViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -66,6 +65,7 @@ import com.kiran.movie.core.ui.models.TvCategory
 import com.kiran.movie.data.models.Item
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @androidx.compose.material3.ExperimentalMaterial3Api
 @Composable
@@ -151,17 +151,18 @@ fun TvShowsScreen(
                 }
 
                 if (lazyPagingItems.itemCount == 0 && lazyPagingItems.loadState.refresh !is LoadState.Loading) {
-                    val errorMsg = if (lazyPagingItems.loadState.refresh is LoadState.Error) {
-                        "Error: " + (lazyPagingItems.loadState.refresh as LoadState.Error).error.message
-                    } else if (searchQuery.isNotEmpty()) {
-                        "No TV shows found for '$searchQuery'"
-                    } else {
-                        "No TV shows found"
-                    }
+                    val errorMsg =
+                        if (lazyPagingItems.loadState.refresh is LoadState.Error) {
+                            "Error: " + (lazyPagingItems.loadState.refresh as LoadState.Error).error.message
+                        } else if (searchQuery.isNotEmpty()) {
+                            "No TV shows found for '$searchQuery'"
+                        } else {
+                            "No TV shows found"
+                        }
                     EmptyStateScreen(
                         icon = Icons.Default.Search,
                         message = errorMsg,
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
                     )
                 } else {
                     LazyVerticalGrid(

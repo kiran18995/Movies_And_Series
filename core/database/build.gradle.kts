@@ -27,6 +27,10 @@ kotlin {
         androidMain.dependencies {
         }
     }
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
 }
 
 room {
@@ -35,7 +39,7 @@ room {
 
 android {
     namespace = "com.kiran.movie.core.database"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

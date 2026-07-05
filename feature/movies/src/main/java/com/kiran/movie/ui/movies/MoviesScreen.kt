@@ -12,7 +12,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -58,7 +57,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.koin.androidx.compose.koinViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -73,6 +71,7 @@ import com.kiran.movie.core.ui.models.MovieSortOrder
 import com.kiran.movie.data.models.Item
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @androidx.compose.material3.ExperimentalMaterial3Api
 @Composable
@@ -159,13 +158,14 @@ fun MoviesScreen(
                 }
 
                 if (lazyPagingItems.itemCount == 0 && lazyPagingItems.loadState.refresh !is LoadState.Loading) {
-                    val errorMsg = if (lazyPagingItems.loadState.refresh is LoadState.Error) {
-                        "Error: " + (lazyPagingItems.loadState.refresh as LoadState.Error).error.message
-                    } else if (searchQuery.isNotEmpty()) {
-                        "No movies found for '$searchQuery'"
-                    } else {
-                        "No movies found"
-                    }
+                    val errorMsg =
+                        if (lazyPagingItems.loadState.refresh is LoadState.Error) {
+                            "Error: " + (lazyPagingItems.loadState.refresh as LoadState.Error).error.message
+                        } else if (searchQuery.isNotEmpty()) {
+                            "No movies found for '$searchQuery'"
+                        } else {
+                            "No movies found"
+                        }
                     EmptyStateScreen(
                         icon = Icons.Default.Search,
                         message = errorMsg,
@@ -200,10 +200,11 @@ fun MoviesScreen(
                                                     viewModel.onEvent(MoviesContract.Event.SelectLanguage(language))
                                                 },
                                                 label = { Text(language.displayName) },
-                                                colors = FilterChipDefaults.filterChipColors(
-                                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                                ),
+                                                colors =
+                                                    FilterChipDefaults.filterChipColors(
+                                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                                    ),
                                             )
                                         }
                                     }
@@ -219,10 +220,11 @@ fun MoviesScreen(
                                                     viewModel.onEvent(MoviesContract.Event.SelectSortOrder(sortOrder))
                                                 },
                                                 label = { Text(sortOrder.displayName) },
-                                                colors = FilterChipDefaults.filterChipColors(
-                                                    selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                                                ),
+                                                colors =
+                                                    FilterChipDefaults.filterChipColors(
+                                                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                                                    ),
                                             )
                                         }
                                     }
@@ -260,11 +262,13 @@ fun MoviesScreen(
                                 count = totalCount,
                                 span = { index ->
                                     if (showCarousel && index == 2) {
-                                        androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan)
+                                        androidx.compose.foundation.lazy.grid
+                                            .GridItemSpan(maxLineSpan)
                                     } else {
-                                        androidx.compose.foundation.lazy.grid.GridItemSpan(1)
+                                        androidx.compose.foundation.lazy.grid
+                                            .GridItemSpan(1)
                                     }
-                                }
+                                },
                             ) { index ->
                                 if (showCarousel && index == 2) {
                                     // Carousel Item
@@ -298,43 +302,47 @@ fun MoviesScreen(
                                                     label = "carouselItemScale",
                                                 )
                                                 Box(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .scale(carouselItemScale)
-                                                        .maskClip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
-                                                        .clickable(
-                                                            interactionSource = carouselInteractionSource,
-                                                            indication = null,
-                                                            onClick = { selectedItemForDetails = carouselItem },
-                                                        )
+                                                    modifier =
+                                                        Modifier
+                                                            .fillMaxSize()
+                                                            .scale(carouselItemScale)
+                                                            .maskClip(
+                                                                androidx.compose.foundation.shape
+                                                                    .RoundedCornerShape(16.dp),
+                                                            ).clickable(
+                                                                interactionSource = carouselInteractionSource,
+                                                                indication = null,
+                                                                onClick = { selectedItemForDetails = carouselItem },
+                                                            ),
                                                 ) {
                                                     coil.compose.AsyncImage(
                                                         model = "${com.kiran.movie.core.ui.BuildConfig.BASE_IMAGE_URL}${carouselItem.posterPath}",
                                                         contentDescription = carouselItem.title,
                                                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                                        modifier = Modifier.fillMaxSize()
+                                                        modifier = Modifier.fillMaxSize(),
                                                     )
 
                                                     IconButton(
                                                         onClick = {
                                                             viewModel.onEvent(MoviesContract.Event.ToggleBookmark(carouselItem))
                                                         },
-                                                        modifier = Modifier
-                                                            .align(Alignment.TopEnd)
-                                                            .padding(12.dp)
-                                                            .background(
-                                                                color = Color.Black.copy(alpha = 0.35f),
-                                                                shape = CircleShape
-                                                            )
-                                                            .size(36.dp)
+                                                        modifier =
+                                                            Modifier
+                                                                .align(Alignment.TopEnd)
+                                                                .padding(12.dp)
+                                                                .background(
+                                                                    color = Color.Black.copy(alpha = 0.35f),
+                                                                    shape = CircleShape,
+                                                                ).size(36.dp),
                                                     ) {
                                                         androidx.compose.material3.Icon(
-                                                            painter = painterResource(
-                                                                id = if (isBookmarked) R.drawable.ic_bookmarked else R.drawable.ic_un_bookmarked
-                                                            ),
+                                                            painter =
+                                                                painterResource(
+                                                                    id = if (isBookmarked) R.drawable.ic_bookmarked else R.drawable.ic_un_bookmarked,
+                                                                ),
                                                             contentDescription = "Bookmark",
                                                             tint = if (isBookmarked) Color(0xFFFFC107) else Color.White,
-                                                            modifier = Modifier.size(22.dp)
+                                                            modifier = Modifier.size(22.dp),
                                                         )
                                                     }
                                                 }

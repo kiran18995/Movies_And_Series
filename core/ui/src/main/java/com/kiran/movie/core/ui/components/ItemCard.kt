@@ -50,7 +50,7 @@ fun ItemCard(
     item: Item,
     onBookmarkClick: (Item) -> Unit,
     onItemClick: (Item) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val cardInteractionSource = remember(item.id) { MutableInteractionSource() }
     val isPressed by cardInteractionSource.collectIsPressedAsState()
@@ -58,18 +58,19 @@ fun ItemCard(
     // Card press scale
     val cardScale by animateFloatAsState(
         targetValue = if (isPressed) 0.94f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "cardScale"
+        animationSpec =
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMedium,
+            ),
+        label = "cardScale",
     )
 
     // Subtle flash overlay on press
     val overlayAlpha by animateFloatAsState(
         targetValue = if (isPressed) 0.12f else 0f,
         animationSpec = tween(durationMillis = 80),
-        label = "overlayAlpha"
+        label = "overlayAlpha",
     )
 
     // ── Bookmark animation ─────────────────────────────────────────────────
@@ -81,23 +82,28 @@ fun ItemCard(
     var isFirstRender by remember(item.id) { mutableStateOf(true) }
 
     LaunchedEffect(item.isBookmarked) {
-        if (isFirstRender) { isFirstRender = false; return@LaunchedEffect }
+        if (isFirstRender) {
+            isFirstRender = false
+            return@LaunchedEffect
+        }
         // Scale pop: compress → overshoot → settle
         launch {
             bookmarkScale.animateTo(0.6f, animationSpec = tween(durationMillis = 100))
             bookmarkScale.animateTo(
                 targetValue = 1.25f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMedium
-                )
+                animationSpec =
+                    spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMedium,
+                    ),
             )
             bookmarkScale.animateTo(
                 targetValue = 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
+                animationSpec =
+                    spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMediumLow,
+                    ),
             )
         }
         // Ripple burst: expand + fade out
@@ -106,7 +112,7 @@ fun ItemCard(
             rippleScale.snapTo(0.3f)
             rippleScale.animateTo(
                 targetValue = 2.2f,
-                animationSpec = tween(durationMillis = 380)
+                animationSpec = tween(durationMillis = 380),
             )
             rippleAlpha.animateTo(0f, animationSpec = tween(durationMillis = 300))
             rippleScale.snapTo(0f)
@@ -114,88 +120,100 @@ fun ItemCard(
     }
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(280.dp)
-            .padding(4.dp)
-            .scale(cardScale)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(
-                interactionSource = cardInteractionSource,
-                indication = null,
-                onClick = { onItemClick(item) }
-            )
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .padding(4.dp)
+                .scale(cardScale)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(
+                    interactionSource = cardInteractionSource,
+                    indication = null,
+                    onClick = { onItemClick(item) },
+                ),
     ) {
         AsyncImage(
             model = "${BuildConfig.BASE_IMAGE_URL}${item.posterPath}",
             contentDescription = item.title ?: "Movie Thumbnail",
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(280.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(280.dp),
         )
 
         // Flash overlay on card press
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White.copy(alpha = overlayAlpha))
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.White.copy(alpha = overlayAlpha)),
         )
 
         // ── Bookmark button ────────────────────────────────────────────────
         val isBookmarked = item.isBookmarked
         val bookmarkIcon = if (isBookmarked) R.drawable.ic_bookmarked else R.drawable.ic_un_bookmarked
-        val bookmarkDesc = if (isBookmarked) {
-            stringResource(R.string.bookmark_remove)
-        } else {
-            stringResource(R.string.bookmark_add)
-        }
+        val bookmarkDesc =
+            if (isBookmarked) {
+                stringResource(R.string.bookmark_remove)
+            } else {
+                stringResource(R.string.bookmark_add)
+            }
         // Tint: filled = warm gold, unfilled = white (always visible over any poster)
         val iconTint = if (isBookmarked) Color(0xFFFFC107) else Color.White
 
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 6.dp, end = 6.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 6.dp, end = 6.dp),
         ) {
             // Ripple burst circle
             Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .scale(rippleScale.value)
-                    .background(
-                        color = if (isBookmarked) Color(0xFFFFC107).copy(alpha = rippleAlpha.value)
-                                else Color.White.copy(alpha = rippleAlpha.value),
-                        shape = CircleShape,
-                    )
+                modifier =
+                    Modifier
+                        .size(36.dp)
+                        .scale(rippleScale.value)
+                        .background(
+                            color =
+                                if (isBookmarked) {
+                                    Color(0xFFFFC107).copy(alpha = rippleAlpha.value)
+                                } else {
+                                    Color.White.copy(alpha = rippleAlpha.value)
+                                },
+                            shape = CircleShape,
+                        ),
             )
 
             // Semi-transparent backdrop for visibility
             Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(
-                        color = Color.Black.copy(alpha = 0.35f),
-                        shape = CircleShape
-                    )
+                modifier =
+                    Modifier
+                        .size(32.dp)
+                        .background(
+                            color = Color.Black.copy(alpha = 0.35f),
+                            shape = CircleShape,
+                        ),
             )
 
             // Bookmark icon with pop animation
             IconButton(
                 onClick = { onBookmarkClick(item) },
-                modifier = Modifier
-                    .size(32.dp)
-                    .graphicsLayer {
-                        scaleX = bookmarkScale.value
-                        scaleY = bookmarkScale.value
-                    }
+                modifier =
+                    Modifier
+                        .size(32.dp)
+                        .graphicsLayer {
+                            scaleX = bookmarkScale.value
+                            scaleY = bookmarkScale.value
+                        },
             ) {
                 Icon(
                     painter = painterResource(id = bookmarkIcon),
                     contentDescription = bookmarkDesc,
                     tint = iconTint,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -208,29 +226,30 @@ private fun ItemCardPreview() {
     MovieTheme {
         Surface(
             modifier = Modifier.padding(16.dp),
-            color = MaterialTheme.colorScheme.background
+            color = MaterialTheme.colorScheme.background,
         ) {
             ItemCard(
-                item = com.kiran.movie.data.models.Item(
-                    id = 1,
-                    adult = false,
-                    title = "Sample Movie",
-                    originalTitle = "Sample Movie",
-                    originalLanguage = "en",
-                    posterPath = "/sample.jpg",
-                    backdropPath = null,
-                    voteAverage = 8.5,
-                    voteCount = 100,
-                    popularity = 10.0,
-                    video = false,
-                    overview = "This is a sample movie overview.",
-                    releaseDate = "2024-01-01",
-                    isMovie = true,
-                    isBookmarked = false
-                ),
+                item =
+                    com.kiran.movie.data.models.Item(
+                        id = 1,
+                        adult = false,
+                        title = "Sample Movie",
+                        originalTitle = "Sample Movie",
+                        originalLanguage = "en",
+                        posterPath = "/sample.jpg",
+                        backdropPath = null,
+                        voteAverage = 8.5,
+                        voteCount = 100,
+                        popularity = 10.0,
+                        video = false,
+                        overview = "This is a sample movie overview.",
+                        releaseDate = "2024-01-01",
+                        isMovie = true,
+                        isBookmarked = false,
+                    ),
                 onBookmarkClick = {},
                 onItemClick = {},
-                modifier = Modifier.size(width = 160.dp, height = 280.dp)
+                modifier = Modifier.size(width = 160.dp, height = 280.dp),
             )
         }
     }

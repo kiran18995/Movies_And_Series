@@ -47,7 +47,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.koin.androidx.compose.koinViewModel
 import com.kiran.movie.core.ui.R
 import com.kiran.movie.core.ui.components.EmptyStateScreen
 import com.kiran.movie.core.ui.components.ItemCard
@@ -55,6 +54,7 @@ import com.kiran.movie.core.ui.details.ItemDetailsBottomSheet
 import com.kiran.movie.data.models.Item
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,7 +186,7 @@ fun SavedScreen(
                             }
                         },
                         label = "savedTabContent",
-                    ) { (movieTab, state) ->
+                    ) { (_, state) ->
                         if (state.items.isEmpty()) {
                             EmptyStateScreen(
                                 icon = Icons.Default.Star,

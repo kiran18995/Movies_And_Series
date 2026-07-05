@@ -28,9 +28,8 @@ class MoviesViewModel(
     private val getMoviesUseCase: GetMoviesUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
     private val getBookmarkedIdsUseCase: GetBookmarkedIdsUseCase,
-    private val getUpcomingMoviesUseCase: GetUpcomingMoviesUseCase
+    private val getUpcomingMoviesUseCase: GetUpcomingMoviesUseCase,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow<MoviesContract.State>(MoviesContract.State.Loading)
     val state: StateFlow<MoviesContract.State> = _state.asStateFlow()
 
@@ -79,12 +78,23 @@ class MoviesViewModel(
 
     fun onEvent(event: MoviesContract.Event) {
         when (event) {
-            is MoviesContract.Event.FetchMovies -> searchQueryFlow.value = searchQueryFlow.value // re-trigger
-            is MoviesContract.Event.ToggleBookmark -> toggleBookmark(event.item)
-            is MoviesContract.Event.RefreshBookmarks -> refreshBookmarks()
+            is MoviesContract.Event.FetchMovies -> {
+                searchQueryFlow.value = searchQueryFlow.value
+            }
+
+            // re-trigger
+            is MoviesContract.Event.ToggleBookmark -> {
+                toggleBookmark(event.item)
+            }
+
+            is MoviesContract.Event.RefreshBookmarks -> {
+                refreshBookmarks()
+            }
+
             is MoviesContract.Event.Search -> {
                 searchQueryFlow.value = event.query
             }
+
             is MoviesContract.Event.SelectLanguage -> {
                 if (_selectedLanguage.value != event.language) {
                     _selectedLanguage.value = event.language
@@ -95,6 +105,7 @@ class MoviesViewModel(
                     viewModelScope.launch { fetchMovies(searchQueryFlow.value) }
                 }
             }
+
             is MoviesContract.Event.SelectSortOrder -> {
                 if (_selectedSortOrder.value != event.sortOrder) {
                     _selectedSortOrder.value = event.sortOrder
@@ -123,8 +134,9 @@ class MoviesViewModel(
     private suspend fun fetchMovies(query: String) {
         try {
             _bookmarkedIds.value = getBookmarkedIdsUseCase().toSet()
-            val flow = getMoviesUseCase(query, _selectedLanguage.value.code, _selectedSortOrder.value.value) // issue #5: no isMovie
-                .cachedIn(viewModelScope)
+            val flow =
+                getMoviesUseCase(query, _selectedLanguage.value.code, _selectedSortOrder.value.value) // issue #5: no isMovie
+                    .cachedIn(viewModelScope)
             _state.value = MoviesContract.State.Success(flow)
         } catch (e: CancellationException) {
             throw e // issue #11

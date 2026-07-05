@@ -2,8 +2,6 @@ package com.kiran.movie.core.ui.details
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
-import android.webkit.WebResourceResponse
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,14 +24,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -72,50 +68,61 @@ import com.kiran.movie.core.ui.webview.MovieWebViewActivity
 import com.kiran.movie.data.models.Item
 import com.kiran.movie.data.models.ItemDetails
 import org.koin.androidx.compose.koinViewModel
-import java.io.ByteArrayInputStream
 
 // ---------------------------------------------------------------------------
 // Ad-blocking domain list (common ad/tracker networks)
 // ---------------------------------------------------------------------------
-private val AD_HOSTS = setOf(
-    "doubleclick.net", "googlesyndication.com", "googleadservices.com",
-    "adservice.google.com", "adservice.google.co.in",
-    "pagead2.googlesyndication.com", "tpc.googlesyndication.com",
-    "ads.pubmatic.com", "simage2.pubmatic.com",
-    "secure.adnxs.com", "ib.adnxs.com",
-    "prebid.io", "prebid.org",
-    "taboola.com", "trc.taboola.com",
-    "outbrain.com", "widgets.outbrain.com",
-    "amazon-adsystem.com", "aax.amazon-adsystem.com",
-    "criteo.com", "static.criteo.net",
-    "advertising.com", "adtech.com",
-    "rubiconproject.com", "ads.rubiconproject.com",
-    "openx.net", "openx.com",
-    "moatads.com", "z.moatads.com",
-    "casalemedia.com", "scdn.cxense.com",
-    "ads.yahoo.com", "media.net",
-    "scorecardresearch.com", "doubleclick.com",
-    "cdn.admanager.com", "ads.exoclick.com", "adx.ads.exoclick.com",
-    "popads.net", "popcash.net", "trafficjunky.net",
-    "traffichaus.com", "trafficfactory.biz",
-    "propellerads.com", "admaven.com",
-    "revcontent.com", "adtelligent.com",
-    "ads.themoviedb.org",
-)
-
-private fun shouldBlockRequest(url: String?): Boolean {
-    if (url == null) return false
-    return try {
-        val host = Uri.parse(url).host?.lowercase() ?: return false
-        AD_HOSTS.any { host == it || host.endsWith(".$it") }
-    } catch (_: Exception) {
-        false
-    }
-}
-
-private val EMPTY_RESPONSE by lazy {
-    WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
-}
+private val AD_HOSTS =
+    setOf(
+        "doubleclick.net",
+        "googlesyndication.com",
+        "googleadservices.com",
+        "adservice.google.com",
+        "adservice.google.co.in",
+        "pagead2.googlesyndication.com",
+        "tpc.googlesyndication.com",
+        "ads.pubmatic.com",
+        "simage2.pubmatic.com",
+        "secure.adnxs.com",
+        "ib.adnxs.com",
+        "prebid.io",
+        "prebid.org",
+        "taboola.com",
+        "trc.taboola.com",
+        "outbrain.com",
+        "widgets.outbrain.com",
+        "amazon-adsystem.com",
+        "aax.amazon-adsystem.com",
+        "criteo.com",
+        "static.criteo.net",
+        "advertising.com",
+        "adtech.com",
+        "rubiconproject.com",
+        "ads.rubiconproject.com",
+        "openx.net",
+        "openx.com",
+        "moatads.com",
+        "z.moatads.com",
+        "casalemedia.com",
+        "scdn.cxense.com",
+        "ads.yahoo.com",
+        "media.net",
+        "scorecardresearch.com",
+        "doubleclick.com",
+        "cdn.admanager.com",
+        "ads.exoclick.com",
+        "adx.ads.exoclick.com",
+        "popads.net",
+        "popcash.net",
+        "trafficjunky.net",
+        "traffichaus.com",
+        "trafficfactory.biz",
+        "propellerads.com",
+        "admaven.com",
+        "revcontent.com",
+        "adtelligent.com",
+        "ads.themoviedb.org",
+    )
 
 // ---------------------------------------------------------------------------
 // Composables
@@ -177,24 +184,27 @@ private fun DetailsContent(
     item: Item,
 ) {
     val context = LocalContext.current
-    val watchUrl = if (item.isMovie) {
-        "https://streamimdb.ru/embed/movie/${item.id}"
-    } else {
-        "https://streamimdb.ru/embed/tv/${item.id}"
-    }
+    val watchUrl =
+        if (item.isMovie) {
+            "https://streamimdb.ru/embed/movie/${item.id}"
+        } else {
+            "https://streamimdb.ru/embed/tv/${item.id}"
+        }
 
     var showEpisodeSelector by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
     ) {
         // ── Backdrop + Poster + Title ────────────────────────────────────────
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
         ) {
             AsyncImage(
                 model = "${BuildConfig.BASE_IMAGE_URL}${details.backdropPath ?: details.posterPath}",
@@ -203,41 +213,46 @@ private fun DetailsContent(
                 modifier = Modifier.fillMaxSize(),
             )
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, MaterialTheme.colorScheme.surface),
-                            startY = 100f,
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, MaterialTheme.colorScheme.surface),
+                                startY = 100f,
+                            ),
                         ),
-                    ),
             )
             Row(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = 16.dp)
-                    .offset(y = 20.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(horizontal = 16.dp)
+                        .offset(y = 20.dp),
             ) {
                 AsyncImage(
                     model = "${BuildConfig.BASE_IMAGE_URL}${details.posterPath}",
                     contentDescription = "Poster",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .width(100.dp)
-                        .height(150.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                    modifier =
+                        Modifier
+                            .width(100.dp)
+                            .height(150.dp)
+                            .clip(RoundedCornerShape(8.dp)),
                 )
                 Column(
-                    modifier = Modifier
-                        .padding(start = 16.dp)
-                        .align(Alignment.Bottom),
+                    modifier =
+                        Modifier
+                            .padding(start = 16.dp)
+                            .align(Alignment.Bottom),
                 ) {
                     Text(
                         text = details.title ?: "Unknown",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                        ),
+                        style =
+                            MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                            ),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -250,31 +265,35 @@ private fun DetailsContent(
         Spacer(modifier = Modifier.height(40.dp))
 
         // ── Play Now + Watch Trailer side by side ─────────────────────────────
-        val trailer = details.videos?.results?.firstOrNull {
-            it.type == "Trailer" && it.site == "YouTube"
-        }
+        val trailer =
+            details.videos?.results?.firstOrNull {
+                it.type == "Trailer" && it.site == "YouTube"
+            }
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             // Play Now
             Button(
                 onClick = {
                     if (item.isMovie) {
-                        val intent = Intent(context, MovieWebViewActivity::class.java).apply {
-                            putExtra(MovieWebViewActivity.EXTRA_URL, watchUrl)
-                            putExtra(MovieWebViewActivity.EXTRA_TITLE, details.title ?: "Watch")
-                        }
+                        val intent =
+                            Intent(context, MovieWebViewActivity::class.java).apply {
+                                putExtra(MovieWebViewActivity.EXTRA_URL, watchUrl)
+                                putExtra(MovieWebViewActivity.EXTRA_TITLE, details.title ?: "Watch")
+                            }
                         context.startActivity(intent)
                     } else {
                         showEpisodeSelector = true
                     }
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .height(52.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
@@ -299,9 +318,10 @@ private fun DetailsContent(
                             ),
                         )
                     },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(52.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(52.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
@@ -324,9 +344,10 @@ private fun DetailsContent(
             if (!details.tagline.isNullOrEmpty()) {
                 Text(
                     text = "\"${details.tagline}\"",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    ),
+                    style =
+                        MaterialTheme.typography.bodyMedium.copy(
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -365,7 +386,6 @@ private fun DetailsContent(
 
         // ── Trailer + Overview + Cast ─────────────────────────────────────────
         Column(modifier = Modifier.padding(16.dp)) {
-
             Text(
                 text = "Overview",
                 style = MaterialTheme.typography.titleMedium,
@@ -393,15 +413,19 @@ private fun DetailsContent(
                             modifier = Modifier.width(80.dp),
                         ) {
                             AsyncImage(
-                                model = if (cast.profilePath != null)
-                                    "${BuildConfig.BASE_IMAGE_URL}${cast.profilePath}"
-                                else null,
+                                model =
+                                    if (cast.profilePath != null) {
+                                        "${BuildConfig.BASE_IMAGE_URL}${cast.profilePath}"
+                                    } else {
+                                        null
+                                    },
                                 contentDescription = cast.name,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Gray),
+                                modifier =
+                                    Modifier
+                                        .size(60.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Gray),
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -422,10 +446,11 @@ private fun DetailsContent(
     // Season/Episode picker for TV shows
     if (showEpisodeSelector) {
         EpisodeSelectorDialog(
-            seasons = details.seasons
-                ?.filter { it.seasonNumber > 0 }  // exclude Specials (season 0)
-                ?.sortedBy { it.seasonNumber }
-                ?.ifEmpty { null },
+            seasons =
+                details.seasons
+                    ?.filter { it.seasonNumber > 0 } // exclude Specials (season 0)
+                    ?.sortedBy { it.seasonNumber }
+                    ?.ifEmpty { null },
             fallbackSeasonCount = details.numberOfSeasons ?: 1,
             tmdbId = item.id,
             title = details.title,
@@ -440,7 +465,7 @@ private fun DetailsContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EpisodeSelectorDialog(
-    seasons: List<com.kiran.movie.data.models.SeasonInfo>?,  // null = fallback
+    seasons: List<com.kiran.movie.data.models.SeasonInfo>?, // null = fallback
     fallbackSeasonCount: Int,
     tmdbId: Int,
     title: String?,
@@ -449,24 +474,26 @@ private fun EpisodeSelectorDialog(
     val context = LocalContext.current
 
     // Build a season list: prefer real API data, fall back to a numbered list
-    val seasonList = seasons
-        ?: List(fallbackSeasonCount) { i ->
-            com.kiran.movie.data.models.SeasonInfo(
-                seasonNumber = i + 1,
-                episodeCount = 20,  // conservative fallback
-                name = "Season ${i + 1}"
-            )
-        }
+    val seasonList =
+        seasons
+            ?: List(fallbackSeasonCount) { i ->
+                com.kiran.movie.data.models.SeasonInfo(
+                    seasonNumber = i + 1,
+                    episodeCount = 20, // conservative fallback
+                    name = "Season ${i + 1}",
+                )
+            }
 
     var selectedSeason by remember { mutableIntStateOf(seasonList.first().seasonNumber) }
     var selectedEpisode by remember { mutableIntStateOf(1) }
 
     // Episode count for the currently selected season
-    val episodeCount = seasonList
-        .firstOrNull { it.seasonNumber == selectedSeason }
-        ?.episodeCount
-        ?.coerceAtLeast(1)
-        ?: 1
+    val episodeCount =
+        seasonList
+            .firstOrNull { it.seasonNumber == selectedSeason }
+            ?.episodeCount
+            ?.coerceAtLeast(1)
+            ?: 1
 
     // Reset episode to 1 whenever season changes
     LaunchedEffect(selectedSeason) { selectedEpisode = 1 }
@@ -519,13 +546,14 @@ private fun EpisodeSelectorDialog(
             Button(
                 onClick = {
                     val url = "https://streamimdb.ru/embed/tv/$tmdbId/$selectedSeason/$selectedEpisode"
-                    val intent = Intent(context, MovieWebViewActivity::class.java).apply {
-                        putExtra(MovieWebViewActivity.EXTRA_URL, url)
-                        putExtra(
-                            MovieWebViewActivity.EXTRA_TITLE,
-                            "${title ?: "Watch"} — S${selectedSeason}E${selectedEpisode}",
-                        )
-                    }
+                    val intent =
+                        Intent(context, MovieWebViewActivity::class.java).apply {
+                            putExtra(MovieWebViewActivity.EXTRA_URL, url)
+                            putExtra(
+                                MovieWebViewActivity.EXTRA_TITLE,
+                                "${title ?: "Watch"} — S${selectedSeason}E$selectedEpisode",
+                            )
+                        }
                     context.startActivity(intent)
                     onDismiss()
                 },
@@ -536,7 +564,7 @@ private fun EpisodeSelectorDialog(
                     modifier = Modifier.size(18.dp),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Play S${selectedSeason}E${selectedEpisode}")
+                Text("Play S${selectedSeason}E$selectedEpisode")
             }
         },
         dismissButton = {
@@ -555,27 +583,34 @@ private fun ImdbRatingBadge(rating: Double) {
     val imdbYellow = Color(0xFFF5C518)
     val trackColor = imdbYellow.copy(alpha = 0.20f)
     val fraction = (rating / 10f).coerceIn(0.0, 1.0)
-    val arcColor = when {
-        rating >= 7.5 -> Color(0xFF4CAF50)   // green — great
-        rating >= 6.0 -> Color(0xFFFFC107)   // amber — good
-        else          -> Color(0xFFF44336)   // red   — poor
-    }
+    val arcColor =
+        when {
+            rating >= 7.5 -> Color(0xFF4CAF50)
+
+            // green — great
+            rating >= 6.0 -> Color(0xFFFFC107)
+
+            // amber — good
+            else -> Color(0xFFF44336) // red   — poor
+        }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         // IMDb logo pill
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .background(imdbYellow, RoundedCornerShape(4.dp))
-                .padding(horizontal = 5.dp, vertical = 2.dp),
+            modifier =
+                Modifier
+                    .background(imdbYellow, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp),
         ) {
             Text(
                 text = "IMDb",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 10.sp,
-                    letterSpacing = 0.5.sp,
-                ),
+                style =
+                    MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 10.sp,
+                        letterSpacing = 0.5.sp,
+                    ),
                 color = Color.Black,
             )
         }
@@ -587,10 +622,13 @@ private fun ImdbRatingBadge(rating: Double) {
             Canvas(modifier = Modifier.size(44.dp)) {
                 val strokeWidth = 5.dp.toPx()
                 val inset = strokeWidth / 2f
-                val arcRect = androidx.compose.ui.geometry.Rect(
-                    left = inset, top = inset,
-                    right = size.width - inset, bottom = size.height - inset,
-                )
+                val arcRect =
+                    androidx.compose.ui.geometry.Rect(
+                        left = inset,
+                        top = inset,
+                        right = size.width - inset,
+                        bottom = size.height - inset,
+                    )
                 // Background track
                 drawArc(
                     color = trackColor,
@@ -615,10 +653,11 @@ private fun ImdbRatingBadge(rating: Double) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = String.format("%.1f", rating),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp,
-                    ),
+                    style =
+                        MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                        ),
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
