@@ -440,6 +440,9 @@ struct MovieWebView: UIViewRepresentable {
                 });
             });
         }, 1000);
+        
+        // Disable window.open to prevent popups
+        window.open = function() { return null; };
         """
         let script = WKUserScript(source: jsString, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
         let userContentController = WKUserContentController()
@@ -505,11 +508,24 @@ struct MovieWebView: UIViewRepresentable {
             "revcontent.com", "adtelligent.com"
         ]
         
+        let adUrlPatterns: [String] = [
+            "popunder", "pop-under", "popup", "pop-up",
+            "click.php", "redirect.php", "ad.php", "track.php",
+            "tracking.", "aff.", "affiliate", "banner", "advert",
+            "ad-network", "cpm", "cpc", "betting", "casino"
+        ]
+        
         init(_ parent: MovieWebView) {
             self.parent = parent
         }
         
         private func shouldBlock(url: URL?) -> Bool {
+            guard let urlString = url?.absoluteString.lowercased() else { return false }
+            
+            if adUrlPatterns.contains(where: { urlString.contains($0) }) {
+                return true
+            }
+            
             guard let host = url?.host?.lowercased() else { return false }
             return adHosts.contains { host == $0 || host.hasSuffix(".\($0)") }
         }
@@ -519,6 +535,19 @@ struct MovieWebView: UIViewRepresentable {
             if shouldBlock(url: navigationAction.request.url) {
                 decisionHandler(.cancel)
                 return
+            }
+            
+            // Block main-frame navigation away from the original host (aggressively stops redirect popups)
+            if navigationAction.targetFrame?.isMainFrame == true {
+                let targetHost = navigationAction.request.url?.host?.lowercased() ?? ""
+                let currentHost = webView.url?.host?.lowercased() ?? ""
+                if !currentHost.isEmpty && !targetHost.isEmpty {
+                    let isSameDomain = targetHost == currentHost || targetHost.hasSuffix(".\(currentHost)") || currentHost.hasSuffix(".\(targetHost)")
+                    if !isSameDomain {
+                        decisionHandler(.cancel)
+                        return
+                    }
+                }
             }
             
             // Block external link activations (ad pop-ups), allow everything else
