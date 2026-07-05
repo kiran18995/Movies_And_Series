@@ -421,16 +421,16 @@ function closeModal() {
 // Server 1 = vidlink.pro — ad-free player
 // Servers 2-6 = popular embed providers as fallbacks
 const MOVIE_SOURCES = [
-  { label: 'Server 1', url: id => `https://vidlink.pro/movie/${id}` },
-  { label: 'Server 2', url: id => `https://streamimdb.ru/embed/movie/${id}` },
+  { label: 'Server 1', url: id => `https://streamimdb.ru/embed/movie/${id}` },
+  { label: 'Server 2', url: id => `https://vidlink.pro/movie/${id}` },
   { label: 'Server 3', url: id => `https://vidsrc.me/embed/movie?tmdb=${id}` },
   { label: 'Server 4', url: id => `https://player.autoembed.cc/embed/movie/${id}` },
   { label: 'Server 5', url: id => `https://embed.su/embed/movie/${id}` },
   { label: 'Server 6', url: id => `https://vidsrc.icu/embed/movie/${id}` },
 ];
 const TV_SOURCES = [
-  { label: 'Server 1', url: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}` },
-  { label: 'Server 2', url: (id, s, e) => `https://streamimdb.ru/embed/tv/${id}/${s}/${e}` },
+  { label: 'Server 1', url: (id, s, e) => `https://streamimdb.ru/embed/tv/${id}/${s}/${e}` },
+  { label: 'Server 2', url: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}` },
   { label: 'Server 3', url: (id, s, e) => `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
   { label: 'Server 4', url: (id, s, e) => `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}` },
   { label: 'Server 5', url: (id, s, e) => `https://embed.su/embed/tv/${id}/${s}/${e}` },
