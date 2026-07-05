@@ -116,6 +116,44 @@ class MoviesAndSeriesRepositoryImpl(
             emptyList()
         }
 
+    override suspend fun discoverMoviesWithFilters(
+        genres: List<Int>?,
+        year: Int?,
+        title: String?,
+        isTvShow: Boolean,
+        page: Int
+    ): List<Item> =
+        try {
+            val genresStr = genres?.joinToString(",")
+            if (!title.isNullOrBlank()) {
+                // If a specific title was requested, use search first
+                if (isTvShow) {
+                    moviesAndSeriesApi.searchTvShows(title, page)
+                        .results
+                        .map { it.apply { isMovie = false } }
+                } else {
+                    moviesAndSeriesApi.searchMovies(title, page)
+                        .results
+                        .map { it.apply { isMovie = true } }
+                }
+            } else {
+                // No title - use discover with genre/year filters
+                if (isTvShow) {
+                    moviesAndSeriesApi.discoverTvShowsWithFilters(genresStr, year, "popularity.desc", page)
+                        .results
+                        .map { it.apply { isMovie = false } }
+                } else {
+                    moviesAndSeriesApi.discoverMoviesWithFilters(genresStr, year, "popularity.desc", page)
+                        .results
+                        .map { it.apply { isMovie = true } }
+                }
+            }
+        } catch (e: Exception) {
+            println("discoverMoviesWithFilters error: ${e.message}")
+            e.printStackTrace()
+            emptyList()
+        }
+
     override suspend fun getMoviesList(category: String?, page: Int): List<Item> =
         try {
             moviesAndSeriesApi.getMoviesByCategory(category, page)

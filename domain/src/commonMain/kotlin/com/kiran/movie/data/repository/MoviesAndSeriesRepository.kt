@@ -10,6 +10,7 @@ interface MoviesAndSeriesRepository {
     fun getTvShows(query: String, category: String): Flow<PagingData<Item>>
     suspend fun getUpcomingMoviesByLanguage(language: String?, page: Int): List<Item>
     suspend fun discoverMoviesList(language: String?, sortBy: String, page: Int): List<Item>
+    suspend fun discoverMoviesWithFilters(genres: List<Int>?, year: Int?, title: String?, isTvShow: Boolean, page: Int): List<Item>
     suspend fun getMoviesList(category: String?, page: Int): List<Item>
     suspend fun getTvShowsList(category: String, page: Int): List<Item>
     suspend fun searchMoviesList(query: String, page: Int): List<Item>

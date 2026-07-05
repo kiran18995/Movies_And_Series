@@ -43,6 +43,7 @@ dependencies {
     api(libs.coil)
     api(libs.shimmer)
     api(project(":domain"))
+    api(project(":shared"))
 
     val composeBom = platform(libs.compose.bom)
     api(composeBom)
@@ -50,6 +51,8 @@ dependencies {
     api(libs.androidx.ui.graphics)
     api(libs.androidx.ui.tooling.preview)
     api(libs.androidx.material3)
+    api(libs.androidx.activity.compose)
+    api("androidx.compose.material:material-icons-extended:1.6.8")
     api(libs.coil.compose)
     api(libs.androidx.paging.compose)
     debugApi(libs.androidx.ui.tooling)

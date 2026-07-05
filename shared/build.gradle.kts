@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.android.library)
 }
 
 val localProperties = Properties()
@@ -16,6 +17,7 @@ val baseUrl: String = "https://api.themoviedb.org/3/"
 
 kotlin {
     jvmToolchain(17)
+    androidTarget()
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -51,5 +53,17 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
+    }
+}
+
+android {
+    namespace = "com.kiran.movie.shared"
+    compileSdk = 37
+    defaultConfig {
+        minSdk = 24
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }

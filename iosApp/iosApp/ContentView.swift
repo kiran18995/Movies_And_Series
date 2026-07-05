@@ -22,6 +22,11 @@ struct ContentView: View {
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
                 }
+                
+            AiSearchView()
+                .tabItem {
+                    Label("AI Search", systemImage: "mic.fill")
+                }
         }
         .accentColor(.red)
     }

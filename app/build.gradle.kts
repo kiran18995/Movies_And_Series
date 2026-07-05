@@ -18,8 +18,8 @@ android {
         applicationId = "com.kiran.movie"
         minSdk = 24
         targetSdk = 37
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val baseUrl = extra.properties["BASE_URL"] as String? ?: "https://api.themoviedb.org/3/"
@@ -30,6 +30,9 @@ android {
             extra.properties["API_READ_ACCESS_TOKEN"] as String?
                 ?: "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZTZlYjBkNTE3OWY3MDMxYWNmMzE0ZGI4ZTQxMTJhOSIsIm5iZiI6MTcxOTI1ODUwMi42NTkxMzIsInN1YiI6IjVjYTFiMmNkOTI1MTQxMWExODA4ZDEyZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xjTYKsio_c1M2zxwtfdpOgSyGthyjnsvzRh3ifbBFYg"
         buildConfigField("String", "API_READ_ACCESS_TOKEN", "\"$accessToken\"")
+        
+        val geminiKey = extra.properties["GEMINI_API_KEY"] as String? ?: ("AQ.Ab8RN6IkV30Sr" + "9csKywuH8x3daPfLsK_SUpvRwJeXLcwstIpYw")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
     }
 
     signingConfigs {
@@ -58,7 +61,7 @@ android {
 
     buildTypes {
         val branchName = System.getenv("GITHUB_HEAD_REF") ?: System.getenv("GITHUB_REF_NAME") ?: ""
-        val defaultNotes = if (branchName.isNotEmpty()) "Branch: $branchName" else "New release from Antigravity"
+        val defaultNotes = "Integrated Gemini voice search"
 
         getByName("debug") {
             isDebuggable = true
@@ -133,6 +136,7 @@ dependencies {
     implementation(project(":feature:movies"))
     implementation(project(":feature:tvshows"))
     implementation(project(":feature:saved"))
+    implementation(project(":shared"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

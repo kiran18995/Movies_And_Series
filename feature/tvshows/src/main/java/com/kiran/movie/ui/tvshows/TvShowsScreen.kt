@@ -74,11 +74,16 @@ fun TvShowsScreen(
     onListEmptyStateChange: (Boolean) -> Unit,
     innerPadding: PaddingValues,
     viewModel: TvShowsViewModel = koinViewModel(),
+    aiViewModel: com.kiran.movie.shared.SharedAiSearchViewModel = org.koin.compose.koinInject()
 ) {
     val state by viewModel.state.collectAsState()
     val bookmarkedIds by viewModel.bookmarkedIds.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val carouselItemsList by viewModel.carouselItems.collectAsState()
+    
+    val aiResults by aiViewModel.results.collectAsState()
+    val aiIsLoading by aiViewModel.isLoading.collectAsState()
+    
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
@@ -113,25 +118,28 @@ fun TvShowsScreen(
         }
     }
 
-    Column(
+    Box(
         modifier =
             Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
     ) {
-        when (val currentState = state) {
-            is TvShowsContract.State.Loading -> {
-                LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(32.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                    )
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when (val currentState = state) {
+                is TvShowsContract.State.Loading -> {
+                    LaunchedEffect(Unit) { onListEmptyStateChange(true) }
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(innerPadding),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(32.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                 }
-            }
 
             is TvShowsContract.State.Error -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
@@ -226,11 +234,12 @@ fun TvShowsScreen(
                             }
                         }
 
-                        val itemCount = lazyPagingItems.itemCount
-
-                        items(minOf(2, itemCount)) { index ->
-                            val item = lazyPagingItems[index]
-                            if (item != null) {
+                        if (aiResults.isNotEmpty()) {
+                            items(
+                                count = aiResults.size,
+                                span = { androidx.compose.foundation.lazy.grid.GridItemSpan(1) }
+                            ) { index ->
+                                val item = aiResults[index]
                                 val displayItem = item.copy(isBookmarked = bookmarkedIds.contains(item.id))
                                 ItemCard(
                                     item = displayItem,
@@ -240,7 +249,22 @@ fun TvShowsScreen(
                                     onItemClick = { selectedItemForDetails = it },
                                 )
                             }
-                        }
+                        } else {
+                            val itemCount = lazyPagingItems.itemCount
+
+                            items(minOf(2, itemCount)) { index ->
+                                val item = lazyPagingItems[index]
+                                if (item != null) {
+                                    val displayItem = item.copy(isBookmarked = bookmarkedIds.contains(item.id))
+                                    ItemCard(
+                                        item = displayItem,
+                                        onBookmarkClick = {
+                                            viewModel.onEvent(TvShowsContract.Event.ToggleBookmark(it))
+                                        },
+                                        onItemClick = { selectedItemForDetails = it },
+                                    )
+                                }
+                            }
 
                         if (itemCount >= 2 && carouselItemsList.isNotEmpty()) {
                             item(span = {
@@ -348,10 +372,20 @@ fun TvShowsScreen(
                                 }
                             }
                         }
+                        } // Close the else block for aiResults.isNotEmpty()
                     }
                 }
             }
         }
+        }
+        
+        com.kiran.movie.core.ui.ai.AiVoiceFab(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(innerPadding)
+                .padding(16.dp),
+            viewModel = aiViewModel
+        )
     }
 
     selectedItemForDetails?.let { item ->

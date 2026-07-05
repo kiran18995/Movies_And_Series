@@ -163,8 +163,8 @@ struct DetailView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .fullScreenCover(isPresented: $showingPlayer) {
-                    let streamPath = item.isMovie ? "/embed/movie/\(item.id)" : "/embed/tv/\(item.id)/\(selectedSeason)/\(selectedEpisode)"
-                    if let url = URL(string: "https://streamimdb.ru" + streamPath) {
+                    let streamPath = item.isMovie ? "movie/\(item.id)" : "tv/\(item.id)/\(selectedSeason)/\(selectedEpisode)"
+                    if let url = URL(string: "https://vidlink.pro/" + streamPath) {
                         ZStack(alignment: .topLeading) {
                             MovieWebView(url: url, isLoading: $isVideoLoading)
                                 .ignoresSafeArea()

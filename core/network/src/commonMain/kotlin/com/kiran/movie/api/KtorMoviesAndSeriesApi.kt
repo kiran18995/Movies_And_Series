@@ -33,6 +33,22 @@ class KtorMoviesAndSeriesApi(private val client: HttpClient) : MoviesAndSeriesAp
             }
         }.body()
 
+    override suspend fun discoverMoviesWithFilters(genres: String?, year: Int?, sortBy: String, page: Int): ItemResponse =
+        client.get("discover/movie") {
+            parameter("page", page)
+            parameter("sort_by", sortBy)
+            if (!genres.isNullOrBlank()) parameter("with_genres", genres)
+            if (year != null) parameter("primary_release_year", year)
+        }.body()
+
+    override suspend fun discoverTvShowsWithFilters(genres: String?, year: Int?, sortBy: String, page: Int): ItemResponse =
+        client.get("discover/tv") {
+            parameter("page", page)
+            parameter("sort_by", sortBy)
+            if (!genres.isNullOrBlank()) parameter("with_genres", genres)
+            if (year != null) parameter("first_air_date_year", year)
+        }.body()
+
     override suspend fun getUpcomingMoviesByLanguage(
         language: String?,
         releaseDate: String,

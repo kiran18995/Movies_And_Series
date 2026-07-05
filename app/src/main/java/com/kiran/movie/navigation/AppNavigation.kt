@@ -65,6 +65,8 @@ sealed class Screen(
     object TvShows : Screen("tv_shows", R.string.title_tv_shows, Icons.AutoMirrored.Filled.List)
 
     object Saved : Screen("saved", R.string.title_saved, Icons.Filled.Favorite)
+    
+    object AiSearch : Screen("ai_search", R.string.title_ai_search, Icons.Filled.Search)
 }
 
 val items =

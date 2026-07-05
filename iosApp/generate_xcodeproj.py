@@ -38,6 +38,7 @@ IDs = {
     "SavedView": "A00000000000000000000044",
     "DetailView": "A00000000000000000000045",
     "Components": "A00000000000000000000046",
+    "AiSearchView": "A00000000000000000000047",
     # Build file refs
     "iOSApp_bf": "A00000000000000000000050",
     "ContentView_bf": "A00000000000000000000051",
@@ -46,6 +47,7 @@ IDs = {
     "SavedView_bf": "A00000000000000000000054",
     "DetailView_bf": "A00000000000000000000055",
     "Components_bf": "A00000000000000000000056",
+    "AiSearchView_bf": "A00000000000000000000057",
     # Info.plist group
     "infoPlist": "A00000000000000000000060",
     "sourcesGroup": "A00000000000000000000070",
@@ -59,6 +61,7 @@ SWIFT_FILES = [
     ("SavedView", "SavedView.swift"),
     ("DetailView", "DetailView.swift"),
     ("Components", "Components.swift"),
+    ("AiSearchView", "AiSearchView.swift"),
 ]
 
 BUNDLE_ID = "com.kiran.movie.iosApp"

@@ -80,12 +80,17 @@ fun MoviesScreen(
     onListEmptyStateChange: (Boolean) -> Unit,
     innerPadding: PaddingValues,
     viewModel: MoviesViewModel = koinViewModel(),
+    aiViewModel: com.kiran.movie.shared.SharedAiSearchViewModel = org.koin.compose.koinInject()
 ) {
     val state by viewModel.state.collectAsState()
     val bookmarkedIds by viewModel.bookmarkedIds.collectAsState()
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     val selectedSortOrder by viewModel.selectedSortOrder.collectAsState()
     val carouselItemsList by viewModel.carouselItems.collectAsState()
+    
+    val aiResults by aiViewModel.results.collectAsState()
+    val aiIsLoading by aiViewModel.isLoading.collectAsState()
+    
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
@@ -120,25 +125,28 @@ fun MoviesScreen(
         }
     }
 
-    Column(
+    Box(
         modifier =
             Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
     ) {
-        when (val currentState = state) {
-            is MoviesContract.State.Loading -> {
-                LaunchedEffect(Unit) { onListEmptyStateChange(true) }
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(32.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                    )
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when (val currentState = state) {
+                is MoviesContract.State.Loading -> {
+                    LaunchedEffect(Unit) { onListEmptyStateChange(true) }
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(innerPadding),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(32.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                 }
-            }
 
             is MoviesContract.State.Error -> {
                 LaunchedEffect(Unit) { onListEmptyStateChange(true) }
@@ -254,22 +262,38 @@ fun MoviesScreen(
                                 }
                             }
 
-                            val currentItemCount = lazyPagingItems.itemCount
-                            val showCarousel = currentItemCount >= 2 && carouselItemsList.isNotEmpty()
-                            val totalCount = currentItemCount + (if (showCarousel) 1 else 0)
+                            if (aiResults.isNotEmpty()) {
+                                items(
+                                    count = aiResults.size,
+                                    span = { androidx.compose.foundation.lazy.grid.GridItemSpan(1) }
+                                ) { index ->
+                                    val item = aiResults[index]
+                                    val displayItem = item.copy(isBookmarked = bookmarkedIds.contains(item.id))
+                                    ItemCard(
+                                        item = displayItem,
+                                        onBookmarkClick = {
+                                            viewModel.onEvent(MoviesContract.Event.ToggleBookmark(it))
+                                        },
+                                        onItemClick = { selectedItemForDetails = it },
+                                    )
+                                }
+                            } else {
+                                val currentItemCount = lazyPagingItems.itemCount
+                                val showCarousel = currentItemCount >= 2 && carouselItemsList.isNotEmpty()
+                                val totalCount = currentItemCount + (if (showCarousel) 1 else 0)
 
-                            items(
-                                count = totalCount,
-                                span = { index ->
-                                    if (showCarousel && index == 2) {
-                                        androidx.compose.foundation.lazy.grid
-                                            .GridItemSpan(maxLineSpan)
-                                    } else {
-                                        androidx.compose.foundation.lazy.grid
-                                            .GridItemSpan(1)
-                                    }
-                                },
-                            ) { index ->
+                                items(
+                                    count = totalCount,
+                                    span = { index ->
+                                        if (showCarousel && index == 2) {
+                                            androidx.compose.foundation.lazy.grid
+                                                .GridItemSpan(maxLineSpan)
+                                        } else {
+                                            androidx.compose.foundation.lazy.grid
+                                                .GridItemSpan(1)
+                                        }
+                                    },
+                                ) { index ->
                                 if (showCarousel && index == 2) {
                                     // Carousel Item
                                     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
@@ -403,11 +427,21 @@ fun MoviesScreen(
                                     }
                                 }
                             }
+                            } // Close the else block for aiResults.isNotEmpty()
                         }
                     }
                 }
             }
         }
+        }
+        
+        com.kiran.movie.core.ui.ai.AiVoiceFab(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(innerPadding)
+                .padding(16.dp),
+            viewModel = aiViewModel
+        )
     }
 
     selectedItemForDetails?.let { item ->
