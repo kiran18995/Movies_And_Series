@@ -488,6 +488,15 @@ function loadSource(idx, isTV, item, season, episode) {
   const frame = document.getElementById('playerFrame');
   const loader = document.getElementById('iframeLoader');
   if (loader) loader.classList.remove('hidden');
+
+  // Block popup ads for streamimdb by aggressively sandboxing it.
+  // We don't sandbox vidlink because it refuses to play if sandboxed.
+  if (url.includes('streamimdb')) {
+    frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
+  } else {
+    frame.removeAttribute('sandbox');
+  }
+
   frame.src = '';
   setTimeout(() => { frame.src = url; }, 60);
 
