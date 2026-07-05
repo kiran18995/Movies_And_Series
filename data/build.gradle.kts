@@ -26,6 +26,15 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.paging.runtime.ktx)
         }
+
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(libs.junit)
+                implementation(libs.mockk)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(kotlin("test"))
+            }
+        }
     }
 }
 

@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.appdistribution)
 }
 
 android {
@@ -55,6 +57,9 @@ android {
     }
 
     buildTypes {
+        val branchName = System.getenv("GITHUB_HEAD_REF") ?: System.getenv("GITHUB_REF_NAME") ?: ""
+        val defaultNotes = if (branchName.isNotEmpty()) "Branch: $branchName" else "New release from Antigravity"
+
         getByName("debug") {
             isDebuggable = true
             isMinifyEnabled = false
@@ -62,6 +67,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            firebaseAppDistribution {
+                artifactType = "APK"
+                releaseNotes = defaultNotes
+            }
         }
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
@@ -71,6 +80,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            firebaseAppDistribution {
+                artifactType = "APK"
+                releaseNotes = defaultNotes
+                // Add your tester emails here, or create a group in Firebase and use 'groups = "group-alias"'
+                // testers = "tester1@example.com"
+            }
         }
     }
 
@@ -93,6 +108,9 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

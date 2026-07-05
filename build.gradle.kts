@@ -22,6 +22,4 @@ buildscript {
     }
 }
 
-tasks.register("clean", Delete::class) {
-    delete("path/to/build/dir")
-}
+tasks.register("clean", Delete::class) { delete("path/to/build/dir") }
