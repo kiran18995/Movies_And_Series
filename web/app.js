@@ -153,7 +153,7 @@ async function fetchItems(reset = false) {
 
     // Filter available items via Cloudflare Worker
     if (newItems.length > 0 && state.tab !== 'saved') {
-      const WORKER_URL = 'https://moviesdb-availability-proxy.<YOUR_USERNAME>.workers.dev'; // TODO: Update this URL after deploying the worker
+      const WORKER_URL = 'https://moviesdb-availability-proxy.kiran-moviesdb.workers.dev';
       try {
         const checkRes = await fetch(WORKER_URL, {
           method: 'POST',
@@ -360,7 +360,7 @@ async function openDetail(item) {
     const details = await apiFetch(`/${type}/${item.id}`, { append_to_response: 'credits,videos,seasons' });
 
     let isAvailable = true;
-    const WORKER_URL = 'https://moviesdb-availability-proxy.<YOUR_USERNAME>.workers.dev'; // TODO: Update this URL after deploying the worker
+    const WORKER_URL = 'https://moviesdb-availability-proxy.kiran-moviesdb.workers.dev';
     try {
       const checkRes = await fetch(WORKER_URL, {
         method: 'POST',

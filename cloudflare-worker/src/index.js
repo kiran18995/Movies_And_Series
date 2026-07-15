@@ -31,8 +31,8 @@ export default {
         
         // For TV shows, we just check Season 1 Episode 1
         const url = type === 'tv' 
-          ? \`https://vidlink.pro/tv/\${id}/1/1\`
-          : \`https://vidlink.pro/movie/\${id}\`;
+          ? `https://vidlink.pro/tv/${id}/1/1`
+          : `https://vidlink.pro/movie/${id}`;
 
         try {
           // Make a fast HEAD request
