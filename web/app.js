@@ -149,7 +149,27 @@ async function fetchItems(reset = false) {
     }
 
     state.totalPages = Math.min(data.total_pages || 1, 500);
-    const newItems   = (data.results || []).map(r => normalise(r, !isTV));
+    let newItems     = (data.results || []).map(r => normalise(r, !isTV));
+
+    // Filter available items via Cloudflare Worker
+    if (newItems.length > 0 && state.tab !== 'saved') {
+      const WORKER_URL = 'https://moviesdb-availability-proxy.<YOUR_USERNAME>.workers.dev'; // TODO: Update this URL after deploying the worker
+      try {
+        const checkRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            items: newItems.map(item => ({ id: item.id, type: isTV ? 'tv' : 'movie' }))
+          })
+        });
+        if (checkRes.ok) {
+          const availabilityMap = await checkRes.json();
+          newItems = newItems.filter(item => availabilityMap[item.id] !== false);
+        }
+      } catch (e) {
+        console.warn("Availability check failed, rendering all items", e);
+      }
+    }
 
     if (reset) {
       state.items = newItems;
@@ -338,13 +358,30 @@ async function openDetail(item) {
   try {
     const type    = item.isMovie ? 'movie' : 'tv';
     const details = await apiFetch(`/${type}/${item.id}`, { append_to_response: 'credits,videos,seasons' });
-    renderModal(item, details);
+
+    let isAvailable = true;
+    const WORKER_URL = 'https://moviesdb-availability-proxy.<YOUR_USERNAME>.workers.dev'; // TODO: Update this URL after deploying the worker
+    try {
+      const checkRes = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: [{ id: item.id, type: item.isMovie ? 'movie' : 'tv' }] })
+      });
+      if (checkRes.ok) {
+        const availabilityMap = await checkRes.json();
+        isAvailable = availabilityMap[item.id] !== false;
+      }
+    } catch (e) {
+      console.warn("Availability check failed", e);
+    }
+
+    renderModal(item, details, isAvailable);
   } catch (e) {
     body.innerHTML += `<p style="color:var(--red);padding:20px">Failed to load details: ${e.message}</p>`;
   }
 }
 
-function renderModal(item, d) {
+function renderModal(item, d, isAvailable = true) {
   const body   = document.getElementById('modalBody');
   const bm     = isBookmarked(item.id);
   const year   = (d.release_date || d.first_air_date || '').slice(0, 4);
@@ -389,7 +426,7 @@ function renderModal(item, d) {
     </div>
 
     <div class="modal-actions">
-      <button class="btn-play" id="modalPlayBtn">▶ Play Now</button>
+      ${isAvailable ? `<button class="btn-play" id="modalPlayBtn">▶ Play Now</button>` : `<button class="btn-play" id="modalPlayBtn" disabled style="background:#555;cursor:not-allowed">🚫 Unavailable</button>`}
       ${trailer ? `<a class="btn-trailer" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">🎞 Trailer</a>` : ''}
       <button class="btn-bookmark-modal ${bm ? 'active' : ''}" id="modalBookmarkBtn" data-id="${item.id}">${bm ? '🔖 Saved' : '🏷 Save'}</button>
     </div>
