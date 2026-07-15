@@ -9,7 +9,7 @@
 const API_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZTZlYjBkNTE3OWY3MDMxYWNmMzE0ZGI4ZTQxMTJhOSIsIm5iZiI6MTcxOTI1ODUwMi42NTkxMzIsInN1YiI6IjVjYTFiMmNkOTI1MTQxMWExODA4ZDEyZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xjTYKsio_c1M2zxwtfdpOgSyGthyjnsvzRh3ifbBFYg';
 const BASE_URL   = 'https://api.themoviedb.org/3';
 const IMG_BASE   = 'https://image.tmdb.org/t/p/';
-const HEADERS    = { Authorization: `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' };
+const HEADERS    = { Authorization: `Bearer ${API_TOKEN}`, 'Accept': 'application/json' };
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 let state = {
@@ -37,7 +37,7 @@ let state = {
 // ── STORAGE ───────────────────────────────────────────────────────────────
 function loadBookmarks() {
   try { return JSON.parse(localStorage.getItem('bookmarks') || '[]'); }
-  catch { return []; }
+  catch (e) { return []; }
 }
 function saveBookmarks() {
   localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
@@ -360,10 +360,10 @@ function renderModal(item, d) {
   if (d.status)             meta += `<span class="badge badge-status">${d.status}</span>`;
 
   // Trailer
-  const trailer = (d.videos?.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube');
+  const trailer = (d.videos && d.videos.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube');
 
   // Cast
-  const cast = (d.credits?.cast || []).slice(0, 10).map(c => `
+  const cast = (d.credits && d.credits.cast || []).slice(0, 10).map(c => `
     <div class="cast-card">
       <img class="cast-photo" src="${c.profile_path ? IMG_BASE + 'w185' + c.profile_path : 'https://via.placeholder.com/60x60/1e1e2a/8888aa?text=?'}" alt="${escHtml(c.name)}" loading="lazy" />
       <div class="cast-name">${escHtml(c.name)}</div>
@@ -526,7 +526,7 @@ function openEpisodePicker(item) {
     : [{ season_number: 1, episode_count: 20, name: 'Season 1' }];
 
   renderSeasonChips(seasons);
-  renderEpisodeChips(seasons[0]?.episode_count || 20);
+  renderEpisodeChips(seasons[0] && seasons[0].episode_count || 20);
 
   document.getElementById('episodeOverlay').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
